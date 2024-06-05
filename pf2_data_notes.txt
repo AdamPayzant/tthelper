@@ -1,0 +1,113 @@
+Character:
+    Name
+    Alignment
+    Ancestry
+    Background
+    Class
+    Key Ability
+
+    Abilities
+        Str
+            base
+            level bonus
+        Dex
+            base
+            level bonus
+        Con
+            base
+            level bonus
+        Int
+            base
+            level bonus
+        Wis
+            base
+            level bonus
+        Cha
+            base
+            level bonus
+        Apex item
+    Health
+        Max HP
+        Temp HP
+        Damage
+        Dying value
+        Wound value
+        Doom value
+
+    Resistances
+
+    AC
+    Saves
+        Fort
+            Proficiency
+        Refl
+            Proficiency
+        Will
+            Proficiency
+    
+    Strides
+        Land
+        Fly
+        Swim
+        Burrow
+        Climb
+    
+    Senses
+        Perception
+            Proficiency
+        Abnormal Senses : List
+    Hero Points
+    Focus
+        Max Focus points
+        Current Focus points
+    
+    Skills
+        <skill>
+            Proficiency
+    
+    Attacks
+        Proficiency, matk, mdmg, fundamental runes, attack bonus map chart, [<damage die>|<damage bonus>]<damage type>..., traits
+    Weapon Proficiency
+        Simple
+        Martial
+        Weapon Spec
+    Armor Proficiency
+        Unarmored
+        Light
+        Medium
+        Heavy
+    Class DC
+
+    Ancestry Features
+        <List of ancestry features>
+    Class Features
+        <List of class features>
+    Feats
+        <List of feats>
+    
+    Inventory
+        Worn/Invested
+            Armor
+            <Other worn items>
+        Readied Items
+            <List of readied items>
+        Stored
+            <List of stored items>
+
+    // Data columns for each tradition known
+    Spellcasting Data
+        Tradition
+        Ability
+        Spellcasting Proficiency
+        Spells Known/x per day
+        Attack
+        DC
+        Spells Known
+            <list of spells known by level>
+                Prepared
+
+    Formula Book
+        <Formula>
+    
+    Statuses
+        <List of Statuses>
