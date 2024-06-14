@@ -1,113 +1,138 @@
 Character:
-    Name
-    Alignment
-    Ancestry
-    Background
-    Class
-    Key Ability
+    Name - Static
+    Alignment - Static
+    Ancestry - Static
+    Background - Static
+    Class - Static
+    Key Ability - Static
 
     Abilities
         Str
-            base
-            level bonus
+            base = ancestry bonus + background bonus + class bonus
+            bonus - static
         Dex
-            base
-            level bonus
+            base = ancestry bonus + background bonus + class bonus
+            bonus - static
         Con
-            base
-            level bonus
+            base = ancestry bonus + background bonus + class bonus
+            bonus - static
         Int
-            base
-            level bonus
+            base = ancestry bonus + background bonus + class bonus
+            bonus - static
         Wis
-            base
-            level bonus
+            base = ancestry bonus + background bonus + class bonus
+            bonus - static
         Cha
-            base
-            level bonus
-        Apex item
+            base = ancestry bonus + background bonus + class bonus
+            bonus - static
+        Apex item - REFERENCES items
     Health
-        Max HP
-        Temp HP
-        Damage
-        Dying value
-        Wound value
-        Doom value
+        Max HP = (class bonus + con mod + per level bonuses) * level + flat bonuses
+        Temp HP - Static
+        Damage - Static
+        Dying value - Static
+        Wound value - Static
+        Doom value - Static
 
-    Resistances
+    Resistances (list)
+        <entry> - Static
 
-    AC
+    AC = 10 + (dex up to armor cap) + proficiency + armor + shield bonus + misc
     Saves
-        Fort
+        Fort = con_bonus + proficiency + item + misc
             Proficiency
-        Refl
+        Refl = dex_bonus + proficiency + item + misc
             Proficiency
-        Will
+        Will = wis_bonus + proficiency + item + misc
             Proficiency
     
     Strides
-        Land
-        Fly
-        Swim
-        Burrow
-        Climb
+        Land = ancestry base + misc
+        Fly = ancestry base + misc
+        Swim = ancestry base + misc
+        Burrow = ancestry base + misc
+        Climb = ancestry base + misc
     
     Senses
-        Perception
+        Perception = wis_bonus + proficiency + item + misc
             Proficiency
-        Abnormal Senses : List
-    Hero Points
+        Abnormal Senses(list) - Static
+    Hero Points - Static
     Focus
-        Max Focus points
-        Current Focus points
+        Max Focus points = sum of focus providing feats up to 3
+        Current Focus points - Static
     
-    Skills
+    Skills (List)
         <skill>
-            Proficiency
+            Proficiency - Static
+            Bonus = ability_bonus + proficiency + item + misc
+            Assurance
+                set? - Static
+                value = 10+ + proficiency_bonus
     
-    Attacks
-        Proficiency, matk, mdmg, fundamental runes, attack bonus map chart, [<damage die>|<damage bonus>]<damage type>..., traits
-    Weapon Proficiency
-        Simple
-        Martial
-        Weapon Spec
-    Armor Proficiency
-        Unarmored
-        Light
-        Medium
-        Heavy
-    Class DC
+    Attacks (List)
+        <attack>
+            Proficiency - Static
+            matk - Static
+            mdmg - Static
+            fundamental runes - Static
+            Damage die - static
+            Damage type - static
+            traits (List)
+                <trait>
 
-    Ancestry Features
-        <List of ancestry features>
-    Class Features
-        <List of class features>
-    Feats
-        <List of feats>
+    Weapon Proficiency
+        Simple - Static
+        Martial - Static
+        Weapon Spec - Static
+    Armor Proficiency
+        Unarmored - Static
+        Light - Static
+        Medium - Static
+        Heavy - Static
+    Class DC = 10 + proficiency + key_ability_mod
+
+    Ancestry Features (List)
+        <ancestry feature>
+    Class Features (List)
+        <class feature>
+    Feats (List)
+        <feat>
     
     Inventory
-        Worn/Invested
-            Armor
-            <Other worn items>
-        Readied Items
-            <List of readied items>
-        Stored
-            <List of stored items>
+        Invested (List)
+            <invested item> - Static
+        Worn
+            Armor - Static
+            Shield - Static
+        Readied Items (List)
+            <readied item> - Static
+        Stored (List)
+            <stored item> - Static
 
     // Data columns for each tradition known
     Spellcasting Data
-        Tradition
-        Ability
-        Spellcasting Proficiency
-        Spells Known/x per day
-        Attack
-        DC
-        Spells Known
-            <list of spells known by level>
-                Prepared
+        Tradition - Static
+        Ability - Static
+        Spellcasting Proficiency - Static
+        Spells Known/x per day - Static
+        Attack = ability_bonus + proficiency + item + misc
+        DC = 10 + ability_bonus + proficiency + item + misc
+        Spells Known (List)
+            <spell known>
+                Level - Static
+                Description - Static
+                Duration - Static
+                Range - Static
+                Area - Static
+        Prepared (List)
+            <spell> - Static
+                level prepared at - Static
 
-    Formula Book
-        <Formula>
+    Formula Book (List)
+        <Formula> - Static
     
-    Statuses
-        <List of Statuses>
+    Statuses (List)
+        <Status> - Static
+
+

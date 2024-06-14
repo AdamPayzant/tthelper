@@ -1,5 +1,4 @@
 mod db;
-mod scrape;
 
 #[tokio::main]
 async fn main() {

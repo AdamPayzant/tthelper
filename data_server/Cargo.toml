@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1.37.0", features = ["full"] }
 quinn = "0.10.2"
-scraper = "0.19.0"
-async-curl = "0.4.3"
-diesel = { version = "2.1.0", features = ["postgres"] }
+diesel = { version = "2.1.0", features = ["postgres", "64-column-tables"] }
+diesel-derive-enum = { version = "2.1.0", features = ["postgres"] }
 juniper = "0.16.1"
