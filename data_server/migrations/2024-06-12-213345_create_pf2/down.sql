@@ -41,3 +41,5 @@ DROP TYPE pf2_damage_type_modifier;
 DROP TYPE pf2_weapon_spec;
 DROP TYPE pf2_proficiency;
 DROP TYPE pf2_ability;
+
+DROP TABLE users;

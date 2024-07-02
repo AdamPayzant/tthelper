@@ -48,22 +48,22 @@ diesel::table! {
 
     pf2_armor (id) {
         id -> Int4,
-        item_id -> Nullable<Int4>,
-        ac_bonus -> Nullable<Int4>,
+        item_id -> Int4,
+        ac_bonus -> Int4,
         max_dex -> Nullable<Int4>,
-        check_penalty -> Nullable<Int4>,
-        speed_penalty -> Nullable<Int4>,
-        str_requirement -> Nullable<Int4>,
-        armor_type -> Nullable<Pf2ArmorType>,
-        armor_group -> Nullable<Int4>,
+        check_penalty -> Int4,
+        speed_penalty -> Int4,
+        str_requirement -> Int4,
+        armor_type -> Pf2ArmorType,
+        armor_group -> Int4,
     }
 }
 
 diesel::table! {
     pf2_armor_group (id) {
         id -> Int4,
-        group_name -> Nullable<Text>,
-        armor_spec -> Nullable<Text>,
+        group_name -> Text,
+        armor_spec -> Text,
     }
 }
 
@@ -73,27 +73,27 @@ diesel::table! {
 
     pf2_character_ancestry_ability_modifier (id) {
         id -> Int4,
-        character_id -> Nullable<Int4>,
-        ability -> Nullable<Pf2Ability>,
-        positive_boost -> Nullable<Bool>,
+        character_id -> Int4,
+        ability -> Pf2Ability,
+        positive_boost -> Bool,
     }
 }
 
 diesel::table! {
     pf2_character_ancestry_features (id) {
         id -> Int4,
-        character_id -> Nullable<Int4>,
-        title -> Nullable<Text>,
-        description -> Nullable<Text>,
+        character_id -> Int4,
+        title -> Text,
+        description -> Text,
     }
 }
 
 diesel::table! {
     pf2_character_armor_traits (id) {
         id -> Int4,
-        character_id -> Nullable<Int4>,
-        trait_name -> Nullable<Text>,
-        description -> Nullable<Text>,
+        character_id -> Int4,
+        trait_name -> Text,
+        description -> Text,
     }
 }
 
@@ -104,12 +104,12 @@ diesel::table! {
 
     pf2_character_attacks (id) {
         id -> Int4,
-        character_id -> Nullable<Int4>,
+        character_id -> Int4,
         item_id -> Nullable<Int4>,
-        proficiency -> Nullable<Pf2Proficiency>,
-        matk -> Nullable<Int4>,
-        mdmg -> Nullable<Int4>,
-        attack_type -> Nullable<Pf2AttackType>,
+        proficiency -> Pf2Proficiency,
+        matk -> Int4,
+        mdmg -> Int4,
+        attack_type -> Pf2AttackType,
         damage_die -> Nullable<Int4>,
     }
 }
@@ -120,17 +120,17 @@ diesel::table! {
 
     pf2_character_background_ability_bonus (id) {
         id -> Int4,
-        character_id -> Nullable<Int4>,
-        ability -> Nullable<Pf2Ability>,
+        character_id -> Int4,
+        ability -> Pf2Ability,
     }
 }
 
 diesel::table! {
     pf2_character_containers (id) {
         id -> Int4,
-        item_id -> Nullable<Int4>,
-        bulk_reduction -> Nullable<Int4>,
-        max_bulk -> Nullable<Int4>,
+        item_id -> Int4,
+        bulk_reduction -> Int4,
+        max_bulk -> Int4,
     }
 }
 
@@ -140,8 +140,8 @@ diesel::table! {
 
     pf2_character_damage_type_modifier (id) {
         id -> Int4,
-        character_id -> Nullable<Int4>,
-        modifier -> Nullable<Pf2DamageTypeModifier>,
+        character_id -> Int4,
+        modifier -> Pf2DamageTypeModifier,
         val -> Nullable<Int4>,
     }
 }
@@ -149,58 +149,58 @@ diesel::table! {
 diesel::table! {
     pf2_character_feats (id) {
         id -> Int4,
-        character_id -> Nullable<Int4>,
-        title -> Nullable<Text>,
-        description -> Nullable<Text>,
+        character_id -> Int4,
+        title -> Text,
+        description -> Text,
     }
 }
 
 diesel::table! {
     pf2_character_formula_books (id) {
         id -> Int4,
-        character_id -> Nullable<Int4>,
-        item_id -> Nullable<Int4>,
+        character_id -> Int4,
+        item_id -> Int4,
     }
 }
 
 diesel::table! {
     pf2_character_item_attached_runes (id) {
         id -> Int4,
-        item_id -> Nullable<Int4>,
-        rune_id -> Nullable<Int4>,
+        item_id -> Int4,
+        rune_id -> Int4,
     }
 }
 
 diesel::table! {
     pf2_character_items (id) {
         id -> Int4,
-        character_id -> Nullable<Int4>,
-        item_id -> Nullable<Int4>,
-        quantity -> Nullable<Int4>,
+        character_id -> Int4,
+        item_id -> Int4,
+        quantity -> Int4,
     }
 }
 
 diesel::table! {
     pf2_character_languages (id) {
         id -> Int4,
-        character_id -> Nullable<Int4>,
-        title -> Nullable<Text>,
+        character_id -> Int4,
+        title -> Text,
     }
 }
 
 diesel::table! {
     pf2_character_readied_items (id) {
         id -> Int4,
-        item_id -> Nullable<Int4>,
+        item_id -> Int4,
     }
 }
 
 diesel::table! {
     pf2_character_senses (id) {
         id -> Int4,
-        character_id -> Nullable<Int4>,
-        sense_name -> Nullable<Text>,
-        sense_description -> Nullable<Text>,
+        character_id -> Int4,
+        sense_name -> Text,
+        sense_description -> Text,
     }
 }
 
@@ -210,11 +210,11 @@ diesel::table! {
 
     pf2_character_skills (id) {
         id -> Int4,
-        character_id -> Nullable<Int4>,
-        skill_id -> Nullable<Int4>,
-        proficiency -> Nullable<Pf2Proficiency>,
-        bonuses -> Nullable<Int4>,
-        assurance -> Nullable<Bool>,
+        character_id -> Int4,
+        skill_id -> Int4,
+        proficiency -> Pf2Proficiency,
+        bonuses -> Int4,
+        assurance -> Bool,
     }
 }
 
@@ -224,14 +224,14 @@ diesel::table! {
 
     pf2_character_spell_known (id) {
         id -> Int4,
-        table_id -> Nullable<Int4>,
-        spell_name -> Nullable<Text>,
-        action_length -> Nullable<Pf2Action>,
-        base_level -> Nullable<Int4>,
+        table_id -> Int4,
+        spell_name -> Text,
+        action_length -> Pf2Action,
+        base_level -> Int4,
         duration -> Nullable<Text>,
         spell_range -> Nullable<Text>,
         area -> Nullable<Text>,
-        description -> Nullable<Text>,
+        spell_description -> Text,
         heightening -> Nullable<Text>,
     }
 }
@@ -244,47 +244,47 @@ diesel::table! {
 
     pf2_character_spellcasting_tables (id) {
         id -> Int4,
-        character_id -> Nullable<Int4>,
-        tradition -> Nullable<Pf2SpellTradition>,
-        ability -> Nullable<Pf2Ability>,
-        proficiency -> Nullable<Pf2Proficiency>,
-        spontaneous -> Nullable<Bool>,
-        casts_per_day -> Nullable<Array<Nullable<Int4>>>,
-        max_spells_known -> Nullable<Array<Nullable<Int4>>>,
-        item_bonus -> Nullable<Int4>,
-        misc_bonus -> Nullable<Int4>,
+        character_id -> Int4,
+        tradition -> Pf2SpellTradition,
+        ability -> Pf2Ability,
+        proficiency -> Pf2Proficiency,
+        spontaneous -> Bool,
+        casts_per_day -> Array<Nullable<Int4>>,
+        spells_known -> Array<Nullable<Int4>>,
+        item_bonus -> Int4,
+        misc_bonus -> Int4,
     }
 }
 
 diesel::table! {
     pf2_character_spells_prepared (id) {
         id -> Int4,
-        spell_id -> Nullable<Int4>,
-        level_prepared -> Nullable<Int4>,
+        spell_id -> Int4,
+        level_prepared -> Int4,
     }
 }
 
 diesel::table! {
     pf2_character_statuses (id) {
         id -> Int4,
-        character_id -> Nullable<Int4>,
-        status_name -> Nullable<Text>,
-        status_description -> Nullable<Text>,
+        character_id -> Int4,
+        status_name -> Text,
+        status_description -> Text,
     }
 }
 
 diesel::table! {
     pf2_character_stored_items (id) {
         id -> Int4,
-        item_id -> Nullable<Int4>,
+        item_id -> Int4,
     }
 }
 
 diesel::table! {
     pf2_character_worn_items (id) {
         id -> Int4,
-        item_id -> Nullable<Int4>,
-        invested -> Nullable<Bool>,
+        item_id -> Int4,
+        invested -> Bool,
     }
 }
 
@@ -296,35 +296,35 @@ diesel::table! {
 
     pf2_characters (id) {
         id -> Int4,
-        character_name -> Nullable<Text>,
-        alignment -> Nullable<Text>,
-        ancestry -> Nullable<Text>,
-        background -> Nullable<Text>,
-        character_class -> Nullable<Text>,
-        key_ability -> Nullable<Text>,
-        lvl -> Nullable<Int4>,
-        hero_points -> Nullable<Int4>,
-        str_bonus -> Nullable<Int4>,
-        dex_bonus -> Nullable<Int4>,
-        con_bonus -> Nullable<Int4>,
-        int_bonus -> Nullable<Int4>,
-        wis_bonus -> Nullable<Int4>,
-        cha_bonus -> Nullable<Int4>,
+        character_name -> Text,
+        alignment -> Text,
+        ancestry -> Text,
+        background -> Text,
+        character_class -> Text,
+        key_ability -> Text,
+        lvl -> Int4,
+        hero_points -> Int4,
+        str_bonus -> Int4,
+        dex_bonus -> Int4,
+        con_bonus -> Int4,
+        int_bonus -> Int4,
+        wis_bonus -> Int4,
+        cha_bonus -> Int4,
         active_apex_item -> Nullable<Text>,
         active_apex_item_bonus -> Nullable<Pf2Ability>,
-        temp_hp -> Nullable<Int4>,
-        damage -> Nullable<Int4>,
-        dying -> Nullable<Int4>,
-        wound -> Nullable<Int4>,
-        doom -> Nullable<Int4>,
-        fort_prof -> Nullable<Pf2Proficiency>,
-        fort_misc_bonus -> Nullable<Int4>,
-        refl_prof -> Nullable<Pf2Proficiency>,
-        refl_misc_bonus -> Nullable<Int4>,
-        will_prof -> Nullable<Pf2Proficiency>,
-        will_misc_bonus -> Nullable<Int4>,
-        perception_prof -> Nullable<Pf2Proficiency>,
-        perception_misc_bonus -> Nullable<Int4>,
+        temp_hp -> Int4,
+        damage -> Int4,
+        dying -> Int4,
+        wound -> Int4,
+        doom -> Int4,
+        fort_prof -> Pf2Proficiency,
+        fort_misc_bonus -> Int4,
+        refl_prof -> Pf2Proficiency,
+        refl_misc_bonus -> Int4,
+        will_prof -> Pf2Proficiency,
+        will_misc_bonus -> Int4,
+        perception_prof -> Pf2Proficiency,
+        perception_misc_bonus -> Int4,
         base_land_speed -> Nullable<Int4>,
         base_fly_speed -> Nullable<Int4>,
         base_swim_speed -> Nullable<Int4>,
@@ -332,63 +332,63 @@ diesel::table! {
         base_climb_speed -> Nullable<Int4>,
         max_focus_points -> Nullable<Int4>,
         current_focus_points -> Nullable<Int4>,
-        simple_weapon_prof -> Nullable<Pf2Proficiency>,
-        martial_weapon_prof -> Nullable<Pf2Proficiency>,
-        weapon_spec -> Nullable<Pf2WeaponSpec>,
-        unarmored_prof -> Nullable<Pf2Proficiency>,
-        light_armor_prof -> Nullable<Pf2Proficiency>,
-        med_armor_prof -> Nullable<Pf2Proficiency>,
-        heavy_armor_prof -> Nullable<Pf2Proficiency>,
-        class_prof -> Nullable<Pf2Proficiency>,
+        simple_weapon_prof -> Pf2Proficiency,
+        martial_weapon_prof -> Pf2Proficiency,
+        weapon_spec -> Pf2WeaponSpec,
+        unarmored_prof -> Pf2Proficiency,
+        light_armor_prof -> Pf2Proficiency,
+        med_armor_prof -> Pf2Proficiency,
+        heavy_armor_prof -> Pf2Proficiency,
+        class_prof -> Pf2Proficiency,
     }
 }
 
 diesel::table! {
     pf2_class_features (id) {
         id -> Int4,
-        character_id -> Nullable<Int4>,
-        title -> Nullable<Text>,
-        description -> Nullable<Text>,
+        character_id -> Int4,
+        title -> Text,
+        description -> Text,
     }
 }
 
 diesel::table! {
     pf2_item_traits (id) {
         id -> Int4,
-        item_id -> Nullable<Int4>,
-        trait_id -> Nullable<Int4>,
+        item_id -> Int4,
+        trait_id -> Int4,
     }
 }
 
 diesel::table! {
     pf2_items (id) {
         id -> Int4,
-        item_name -> Nullable<Text>,
-        item_description -> Nullable<Text>,
-        bulk -> Nullable<Int4>,
-        price -> Nullable<Int4>,
-        lvl -> Nullable<Int4>,
-        invested -> Nullable<Bool>,
+        item_name -> Text,
+        item_description -> Text,
+        bulk -> Int4,
+        price -> Int4,
+        lvl -> Int4,
+        invested -> Bool,
     }
 }
 
 diesel::table! {
     pf2_items_in_containers (id) {
         id -> Int4,
-        bag_id -> Nullable<Int4>,
-        item_id -> Nullable<Int4>,
+        bag_id -> Int4,
+        item_id -> Int4,
     }
 }
 
 diesel::table! {
     pf2_shield (id) {
         id -> Int4,
-        item_id -> Nullable<Int4>,
-        ac_bonus -> Nullable<Int4>,
-        hardness -> Nullable<Int4>,
-        hp -> Nullable<Int4>,
-        bp -> Nullable<Int4>,
-        speed_penalty -> Nullable<Int4>,
+        item_id -> Int4,
+        ac_bonus -> Int4,
+        hardness -> Int4,
+        hp -> Int4,
+        bp -> Int4,
+        speed_penalty -> Int4,
     }
 }
 
@@ -398,16 +398,16 @@ diesel::table! {
 
     pf2_skills (id) {
         id -> Int4,
-        title -> Nullable<Text>,
-        ability -> Nullable<Pf2Ability>,
+        title -> Text,
+        ability -> Pf2Ability,
     }
 }
 
 diesel::table! {
     pf2_traits (id) {
         id -> Int4,
-        trait_name -> Nullable<Text>,
-        description -> Nullable<Text>,
+        trait_name -> Text,
+        description -> Text,
     }
 }
 
@@ -418,12 +418,12 @@ diesel::table! {
 
     pf2_weapon (id) {
         id -> Int4,
-        item_id -> Nullable<Int4>,
-        weapon_type -> Nullable<Pf2WeaponType>,
-        weapon_cat -> Nullable<Pf2WeaponCategory>,
+        item_id -> Int4,
+        weapon_type -> Pf2WeaponType,
+        weapon_cat -> Pf2WeaponCategory,
         group_id -> Nullable<Int4>,
-        damage_die -> Nullable<Int4>,
-        hands -> Nullable<Text>,
+        damage_die -> Int4,
+        hands -> Text,
         weapon_range -> Nullable<Int4>,
     }
 }
@@ -431,8 +431,17 @@ diesel::table! {
 diesel::table! {
     pf2_weapon_group (id) {
         id -> Int4,
-        group_name -> Nullable<Text>,
-        crit_spec -> Nullable<Text>,
+        group_name -> Text,
+        crit_spec -> Text,
+    }
+}
+
+diesel::table! {
+    users (id) {
+        id -> Int4,
+        username -> Text,
+        password -> Text,
+        salt -> Text,
     }
 }
 
@@ -505,4 +514,5 @@ diesel::allow_tables_to_appear_in_same_query!(
     pf2_traits,
     pf2_weapon,
     pf2_weapon_group,
+    users,
 );
