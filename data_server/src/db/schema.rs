@@ -441,7 +441,6 @@ diesel::table! {
         id -> Int4,
         username -> Text,
         password -> Text,
-        salt -> Text,
     }
 }
 

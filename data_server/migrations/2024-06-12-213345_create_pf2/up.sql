@@ -1,8 +1,7 @@
 CREATE TABLE IF NOT EXISTS users (
     id serial PRIMARY KEY,
     username text UNIQUE NOT NULL,
-    password text NOT NULL,
-    salt text NOT NULL      
+    password text NOT NULL
 );
 
 CREATE TYPE pf2_ability AS ENUM (

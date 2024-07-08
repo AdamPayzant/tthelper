@@ -1,7 +1,8 @@
+use argon2::PasswordVerifier;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::result::{DatabaseErrorKind, Error as DieselError};
-use log::{error, warn};
+use log::{debug, error, warn};
 
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
@@ -32,7 +33,6 @@ pub fn create_user(
     let new_user = models::NewUser {
         username: username,
         password: password_hash.as_str(),
-        salt: salt.as_str(),
     };
 
     match diesel::insert_into(schema::users::dsl::users)
@@ -76,21 +76,20 @@ pub fn authenticate_user(
     if user_search.len() > 1 {
         return Err(UserMgmtError::UnknownError);
     }
+    if user_search.len() < 1 {
+        return Err(UserMgmtError::UserNotFoundError);
+    }
 
     let argon2 = Argon2::default();
-
     let pw_hash_str = user_search[0].password.as_str();
-    let pw_salt = user_search[0].salt.as_str();
+    let pw_hash = argon2::PasswordHash::new(pw_hash_str).unwrap();
 
-    let challenge = argon2
-        .hash_password(
-            password.as_bytes(),
-            &SaltString::from_b64(pw_salt).expect("Error parsing salt"),
-        )
-        .expect("Error hashing challenge")
-        .to_string();
-
-    Ok(challenge.as_str() != pw_hash_str)
+    Ok(
+        match argon2.verify_password(password.as_bytes(), &pw_hash) {
+            Ok(_) => true,
+            _ => false,
+        },
+    )
 }
 
 pub fn delete_user(db_con: &mut PgConnection, username: &str) -> Result<(), UserMgmtError> {

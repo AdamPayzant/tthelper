@@ -15,6 +15,7 @@ use db::dbms;
 
 // Services
 mod auth;
+mod pf2_services;
 
 use log::{Level, Metadata, Record};
 
@@ -50,7 +51,7 @@ async fn register_user(
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("trace"));
     dotenv().ok();
 
     let db_url: String = env::var("DATABASE_URL").expect("DATABASE_URL NOT SET!");
@@ -92,9 +93,10 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::resource("/auth")
                     .route(web::post().to(auth::login))
-                    .route(web::delete().to(auth::logout))
-                    .route(web::get().to(auth::test_auth)),
+                    .route(web::delete().to(auth::logout)),
             )
+            .service(auth::test_auth)
+            .service(register_user)
     })
     .bind(server_addr)?
     .run()
