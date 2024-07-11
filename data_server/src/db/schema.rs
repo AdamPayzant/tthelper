@@ -296,6 +296,7 @@ diesel::table! {
 
     pf2_characters (id) {
         id -> Int4,
+        owner -> Int4,
         character_name -> Text,
         alignment -> Text,
         ancestry -> Text,
@@ -472,6 +473,7 @@ diesel::joinable!(pf2_character_spells_prepared -> pf2_character_spell_known (sp
 diesel::joinable!(pf2_character_statuses -> pf2_characters (character_id));
 diesel::joinable!(pf2_character_stored_items -> pf2_character_items (item_id));
 diesel::joinable!(pf2_character_worn_items -> pf2_items (item_id));
+diesel::joinable!(pf2_characters -> users (owner));
 diesel::joinable!(pf2_class_features -> pf2_characters (character_id));
 diesel::joinable!(pf2_item_traits -> pf2_items (item_id));
 diesel::joinable!(pf2_item_traits -> pf2_traits (trait_id));

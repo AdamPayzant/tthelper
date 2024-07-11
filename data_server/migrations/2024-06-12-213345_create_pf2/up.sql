@@ -159,6 +159,8 @@ CREATE TABLE IF NOT EXISTS pf2_shield (
 
 CREATE TABLE IF NOT EXISTS pf2_characters (
     id serial PRIMARY KEY,
+    owner integer REFERENCES users(id) NOT NULL,
+
     character_name text NOT NULL,
     alignment text NOT NULL,
     ancestry text NOT NULL,
@@ -209,7 +211,7 @@ CREATE TABLE IF NOT EXISTS pf2_characters (
     -- Focus
         max_focus_points integer,
         current_focus_points integer,
-    
+
 
     -- proficiencies
         simple_weapon_prof pf2_proficiency DEFAULT 'Untrained' NOT NULL,

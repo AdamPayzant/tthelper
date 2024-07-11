@@ -14,6 +14,27 @@ const TOKEN_LIFESPAN: i64 = 60 * 60 * 24 * 7; // 1 week
 pub static KEY: [u8; 16] = *include_bytes!("../secret.key");
 
 #[derive(Debug, Deserialize)]
+pub struct AuthorizedData<T> {
+    user: String,
+    token: String,
+    data: T,
+}
+
+impl<T> AuthorizedData<T> {
+    pub fn get_verified_request(&self, session: &Session) -> Result<&T, ()> {
+        if verify_token(self.user.clone(), self.token.clone(), session) {
+            Ok(&self.data)
+        } else {
+            Err(())
+        }
+    }
+
+    pub fn get_user(&self) -> String {
+        self.user.clone()
+    }
+}
+
+#[derive(Debug, Deserialize)]
 pub struct AuthData {
     pub username: String,
     pub password: String,

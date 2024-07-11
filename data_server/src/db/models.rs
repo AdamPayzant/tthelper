@@ -105,6 +105,7 @@ pub struct ClassFeature {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Character {
     id: i32,
+    owner: i32,
     character_name: String,
     alignment: String,
     ancestry: String,
@@ -155,6 +156,19 @@ pub struct Character {
     med_armor_prof: db_enums::Pf2Proficiency,
     heavy_armor_prof: db_enums::Pf2Proficiency,
     class_prof: db_enums::Pf2Proficiency,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = schema::pf2_characters)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct NewCharacter<'a> {
+    pub character_name: &'a str,
+    pub owner: i32,
+    pub alignment: &'a str,
+    pub ancestry: &'a str,
+    pub background: &'a str,
+    pub character_class: &'a str,
+    pub key_ability: &'a str,
 }
 
 #[derive(Queryable, Selectable)]
