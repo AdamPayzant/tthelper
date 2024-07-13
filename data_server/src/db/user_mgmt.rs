@@ -92,6 +92,30 @@ pub fn authenticate_user(
     )
 }
 
+pub fn get_uid(db_con: &mut PgConnection, username: &str) -> Option<i32> {
+    use schema::users::dsl;
+
+    let user_search: Vec<models::User> = match dsl::users
+        .filter(dsl::username.eq(username))
+        .limit(2)
+        .select(models::User::as_select())
+        .load(db_con)
+    {
+        Ok(res) => res,
+        Err(_) => return None,
+    };
+
+    // This is extremely problematic if this occurs
+    if user_search.len() > 1 {
+        return None;
+    }
+    if user_search.len() < 1 {
+        return None;
+    }
+
+    Some(user_search[0].id)
+}
+
 pub fn delete_user(db_con: &mut PgConnection, username: &str) -> Result<(), UserMgmtError> {
     use schema::users::dsl;
 

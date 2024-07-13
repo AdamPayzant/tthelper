@@ -5,157 +5,158 @@ use crate::db::schema;
 
 use super::schema::sql_types::Pf2Proficiency;
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_weapon_group)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct WeaponGroup {
-    id: i32,
-    group_name: String,
-    crit_spec: String,
+    pub id: i32,
+    pub group_name: String,
+    pub crit_spec: String,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_weapon)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Weapon {
-    id: i32,
-    item_id: i32,
-    weapon_type: db_enums::Pf2WeaponType,
-    weapon_cat: db_enums::Pf2WeaponCategory,
-    group_id: Option<i32>,
-    damage_die: i32,
-    hands: String,
-    weapon_range: Option<i32>,
+    pub id: i32,
+    pub item_id: i32,
+    pub weapon_type: db_enums::Pf2WeaponType,
+    pub weapon_cat: db_enums::Pf2WeaponCategory,
+    pub group_id: Option<i32>,
+    pub damage_die: i32,
+    pub hands: String,
+    pub weapon_range: Option<i32>,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_traits)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Trait {
-    id: i32,
-    trait_name: String,
-    description: String,
+    pub id: i32,
+    pub trait_name: String,
+    pub description: String,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_skills)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Skill {
-    id: i32,
-    title: String,
-    ability: db_enums::Pf2Ability,
+    pub id: i32,
+    pub title: String,
+    pub ability: db_enums::Pf2Ability,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_shield)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Shield {
-    id: i32,
-    item_id: i32,
-    ac_bonus: i32,
-    hardness: i32,
-    hp: i32,
-    bp: i32,
-    speed_penalty: i32,
+    pub id: i32,
+    pub item_id: i32,
+    pub ac_bonus: i32,
+    pub hardness: i32,
+    pub hp: i32,
+    pub bp: i32,
+    pub speed_penalty: i32,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_items_in_containers)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ContainedItem {
-    id: i32,
-    bag_id: i32,
-    item_id: i32,
+    pub id: i32,
+    pub bag_id: i32,
+    pub item_id: i32,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_items)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Item {
-    id: i32,
-    item_name: String,
-    item_description: String,
-    bulk: i32,
-    price: i32,
-    lvl: i32,
-    invested: bool,
+    pub id: i32,
+    pub item_name: String,
+    pub item_description: String,
+    pub bulk: i32,
+    pub price: i32,
+    pub lvl: i32,
+    pub invested: bool,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Associations, Identifiable)]
+#[diesel(belongs_to(Item))]
 #[diesel(table_name = schema::pf2_item_traits)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ItemTrait {
-    id: i32,
-    item_id: i32,
-    trait_id: i32,
+    pub id: i32,
+    pub item_id: i32,
+    pub trait_id: i32,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_class_features)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ClassFeature {
-    id: i32,
-    character_id: i32,
-    title: String,
-    description: String,
+    pub id: i32,
+    pub character_id: i32,
+    pub title: String,
+    pub description: String,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_characters)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Character {
-    id: i32,
-    owner: i32,
-    character_name: String,
-    alignment: String,
-    ancestry: String,
-    background: String,
-    character_class: String,
-    key_ability: String,
-    lvl: i32,
-    hero_points: i32,
+    pub id: i32,
+    pub owner: i32,
+    pub character_name: String,
+    pub alignment: String,
+    pub ancestry: String,
+    pub background: String,
+    pub character_class: String,
+    pub key_ability: String,
+    pub lvl: i32,
+    pub hero_points: i32,
 
-    str_bonus: i32,
-    dex_bonus: i32,
-    con_bonus: i32,
-    int_bonus: i32,
-    wis_bonus: i32,
-    cha_bonus: i32,
-    active_apex_item: Option<String>,
-    active_apex_item_bonus: Option<db_enums::Pf2Ability>,
+    pub str_bonus: i32,
+    pub dex_bonus: i32,
+    pub con_bonus: i32,
+    pub int_bonus: i32,
+    pub wis_bonus: i32,
+    pub cha_bonus: i32,
+    pub active_apex_item: Option<String>,
+    pub active_apex_item_bonus: Option<db_enums::Pf2Ability>,
 
-    temp_hp: i32,
-    damage: i32,
-    dying: i32,
-    wound: i32,
-    doom: i32,
+    pub temp_hp: i32,
+    pub damage: i32,
+    pub dying: i32,
+    pub wound: i32,
+    pub doom: i32,
 
-    fort_prof: db_enums::Pf2Proficiency,
-    fort_misc_bonus: i32,
-    refl_prof: db_enums::Pf2Proficiency,
-    refl_misc_bonus: i32,
-    will_prof: db_enums::Pf2Proficiency,
-    will_misc_bonus: i32,
-    perception_prof: db_enums::Pf2Proficiency,
-    perception_misc_bonus: i32,
+    pub fort_prof: db_enums::Pf2Proficiency,
+    pub fort_misc_bonus: i32,
+    pub refl_prof: db_enums::Pf2Proficiency,
+    pub refl_misc_bonus: i32,
+    pub will_prof: db_enums::Pf2Proficiency,
+    pub will_misc_bonus: i32,
+    pub perception_prof: db_enums::Pf2Proficiency,
+    pub perception_misc_bonus: i32,
 
-    base_land_speed: Option<i32>,
-    base_fly_speed: Option<i32>,
-    base_swim_speed: Option<i32>,
-    base_burrow_speed: Option<i32>,
-    base_climb_speed: Option<i32>,
+    pub base_land_speed: Option<i32>,
+    pub base_fly_speed: Option<i32>,
+    pub base_swim_speed: Option<i32>,
+    pub base_burrow_speed: Option<i32>,
+    pub base_climb_speed: Option<i32>,
 
-    max_focus_points: Option<i32>,
-    current_focus_points: Option<i32>,
+    pub max_focus_points: Option<i32>,
+    pub current_focus_points: Option<i32>,
 
-    simple_weapon_prof: db_enums::Pf2Proficiency,
-    martial_weapon_prof: db_enums::Pf2Proficiency,
-    weapon_spec: db_enums::Pf2WeaponSpec,
-    unarmored_prof: db_enums::Pf2Proficiency,
-    light_armor_prof: db_enums::Pf2Proficiency,
-    med_armor_prof: db_enums::Pf2Proficiency,
-    heavy_armor_prof: db_enums::Pf2Proficiency,
-    class_prof: db_enums::Pf2Proficiency,
+    pub simple_weapon_prof: db_enums::Pf2Proficiency,
+    pub martial_weapon_prof: db_enums::Pf2Proficiency,
+    pub weapon_spec: db_enums::Pf2WeaponSpec,
+    pub unarmored_prof: db_enums::Pf2Proficiency,
+    pub light_armor_prof: db_enums::Pf2Proficiency,
+    pub med_armor_prof: db_enums::Pf2Proficiency,
+    pub heavy_armor_prof: db_enums::Pf2Proficiency,
+    pub class_prof: db_enums::Pf2Proficiency,
 }
 
 #[derive(Insertable)]
@@ -171,249 +172,259 @@ pub struct NewCharacter<'a> {
     pub key_ability: &'a str,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable)]
+#[diesel(table_name = schema::pf2_characters)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct CharacterIdName<'a> {
+    pub id: i32,
+    pub character_name: &'a str,
+}
+
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_worn_items)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterWornItem {
-    id: i32,
-    item_id: i32,
-    invested: bool,
+    pub id: i32,
+    pub item_id: i32,
+    pub invested: bool,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_stored_items)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterStoredItem {
-    id: i32,
-    item_id: i32,
+    pub id: i32,
+    pub item_id: i32,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_statuses)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterStatus {
-    id: i32,
-    character_id: i32,
-    status_name: String,
-    status_description: String,
+    pub id: i32,
+    pub character_id: i32,
+    pub status_name: String,
+    pub status_description: String,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_spells_prepared)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct SpellsPrepared {
-    id: i32,
-    spell_id: i32,
-    level_prepared: i32,
+    pub id: i32,
+    pub spell_id: i32,
+    pub level_prepared: i32,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_spellcasting_tables)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct SpellcastingTable {
-    id: i32,
-    character_id: i32,
-    tradition: db_enums::Pf2SpellTradition,
-    ability: db_enums::Pf2Ability,
-    proficiency: db_enums::Pf2Proficiency,
-    spontaneous: bool,
-    casts_per_day: Vec<Option<i32>>,
-    spells_known: Vec<Option<i32>>,
-    item_bonus: i32,
-    misc_bonus: i32,
+    pub id: i32,
+    pub character_id: i32,
+    pub tradition: db_enums::Pf2SpellTradition,
+    pub ability: db_enums::Pf2Ability,
+    pub proficiency: db_enums::Pf2Proficiency,
+    pub spontaneous: bool,
+    pub casts_per_day: Vec<Option<i32>>,
+    pub spells_known: Vec<Option<i32>>,
+    pub item_bonus: i32,
+    pub misc_bonus: i32,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_spell_known)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct SpellKnown {
-    id: i32,
-    table_id: i32,
-    spell_name: String,
-    action_length: db_enums::Pf2Action,
-    base_level: i32,
-    duration: Option<String>,
-    spell_range: Option<String>,
-    area: Option<String>,
-    spell_description: String,
-    heightening: Option<String>,
+    pub id: i32,
+    pub table_id: i32,
+    pub spell_name: String,
+    pub action_length: db_enums::Pf2Action,
+    pub base_level: i32,
+    pub duration: Option<String>,
+    pub spell_range: Option<String>,
+    pub area: Option<String>,
+    pub spell_description: String,
+    pub heightening: Option<String>,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_skills)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterSkill {
-    id: i32,
-    character_id: i32,
-    skill_id: i32,
-    proficiency: db_enums::Pf2Proficiency,
-    bonuses: i32,
-    assurance: bool,
+    pub id: i32,
+    pub character_id: i32,
+    pub skill_id: i32,
+    pub proficiency: db_enums::Pf2Proficiency,
+    pub bonuses: i32,
+    pub assurance: bool,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_senses)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Sense {
-    id: i32,
-    character_id: i32,
-    sense_name: String,
-    sense_description: String,
+    pub id: i32,
+    pub character_id: i32,
+    pub sense_name: String,
+    pub sense_description: String,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_readied_items)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ReadiedItem {
-    id: i32,
-    item_id: i32,
+    pub id: i32,
+    pub item_id: i32,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_languages)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterLanguage {
-    id: i32,
-    character_id: i32,
-    title: String,
+    pub id: i32,
+    pub character_id: i32,
+    pub title: String,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_items)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterItem {
-    id: i32,
-    character_id: i32,
-    item_id: i32,
-    quantity: i32,
+    pub id: i32,
+    pub character_id: i32,
+    pub item_id: i32,
+    pub quantity: i32,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable, Associations)]
 #[diesel(table_name = schema::pf2_character_item_attached_runes)]
+#[diesel(belongs_to(CharacterItem))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct AttachedRune {
-    id: i32,
-    item_id: i32,
-    rune_id: i32,
+    pub id: i32,
+    pub character_item_id: i32,
+    pub rune_id: i32,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_formula_books)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct FormulaBook {
-    id: i32,
-    character_id: i32,
-    item_id: i32,
+    pub id: i32,
+    pub character_id: i32,
+    pub item_id: i32,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_feats)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterFeat {
-    id: i32,
-    character_id: i32,
-    title: String,
-    description: String,
+    pub id: i32,
+    pub character_id: i32,
+    pub title: String,
+    pub description: String,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_damage_type_modifier)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct DamageTypeModifier {
-    id: i32,
-    character_id: i32,
-    modifier: db_enums::Pf2DamageTypeModifier,
-    val: Option<i32>,
+    pub id: i32,
+    pub character_id: i32,
+    pub modifier: db_enums::Pf2DamageTypeModifier,
+    pub val: Option<i32>,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_containers)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterContainers {
-    id: i32,
-    item_id: i32,
-    bulk_reduction: i32,
-    max_bulk: i32,
+    pub id: i32,
+    pub item_id: i32,
+    pub bulk_reduction: i32,
+    pub max_bulk: i32,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_background_ability_bonus)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct BackgroundAbilityBonus {
-    id: i32,
-    character_id: i32,
-    ability: db_enums::Pf2Ability,
+    pub id: i32,
+    pub character_id: i32,
+    pub ability: db_enums::Pf2Ability,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_attacks)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterAttack {
-    id: i32,
-    character_id: i32,
-    item_id: Option<i32>,
-    proficiency: db_enums::Pf2Proficiency,
-    matk: i32,
-    mdmg: i32,
-    attack_type: db_enums::Pf2AttackType,
-    damage_die: Option<i32>,
+    pub id: i32,
+    pub character_id: i32,
+    pub item_id: Option<i32>,
+    pub proficiency: db_enums::Pf2Proficiency,
+    pub matk: i32,
+    pub mdmg: i32,
+    pub attack_type: db_enums::Pf2AttackType,
+    pub damage_die: Option<i32>,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_armor_traits)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ArmorTrait {
-    id: i32,
-    character_id: i32,
-    trait_name: String,
-    description: String,
+    pub id: i32,
+    pub character_id: i32,
+    pub trait_name: String,
+    pub description: String,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_ancestry_features)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct AncestryFeature {
-    id: i32,
-    character_id: i32,
-    title: String,
-    description: String,
+    pub id: i32,
+    pub character_id: i32,
+    pub title: String,
+    pub description: String,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_character_ancestry_ability_modifier)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct AncestryModifier {
-    id: i32,
-    character_id: i32,
-    ability: db_enums::Pf2Ability,
-    positive_boost: bool,
+    pub id: i32,
+    pub character_id: i32,
+    pub ability: db_enums::Pf2Ability,
+    pub positive_boost: bool,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::pf2_armor_group)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ArmorGroup {
-    id: i32,
-    group_name: String,
-    armor_spec: String,
+    pub id: i32,
+    pub group_name: String,
+    pub armor_spec: String,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
+#[diesel(belongs_to(Item))]
 #[diesel(table_name = schema::pf2_armor)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Armor {
-    id: i32,
-    item_id: i32,
-    ac_bonus: i32,
-    max_dex: Option<i32>,
-    check_penalty: i32,
-    speed_penalty: i32,
-    str_requirement: i32,
-    armor_type: db_enums::Pf2ArmorType,
-    armor_group: i32,
+    pub id: i32,
+    pub item_id: i32,
+    pub ac_bonus: i32,
+    pub max_dex: Option<i32>,
+    pub check_penalty: i32,
+    pub speed_penalty: i32,
+    pub str_requirement: i32,
+    pub armor_type: db_enums::Pf2ArmorType,
+    pub armor_group: i32,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Identifiable)]
 #[diesel(table_name = schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {

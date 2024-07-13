@@ -376,18 +376,18 @@ CREATE TABLE IF NOT EXISTS pf2_items_in_containers (
 
 CREATE TABLE IF NOT EXISTS pf2_character_readied_items (
     id serial PRIMARY KEY,
-    item_id integer REFERENCES pf2_items(id) NOT NULL
+    item_id integer REFERENCES pf2_character_items(id) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_worn_items (
     id serial PRIMARY KEY,
-    item_id integer REFERENCES pf2_items(id) NOT NULL,
+    item_id integer REFERENCES pf2_character_items(id) NOT NULL,
     invested boolean DEFAULT false NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_item_attached_runes (
     id serial PRIMARY KEY,
-    item_id integer REFERENCES pf2_character_items(id) NOT NULL,
+    character_item_id integer REFERENCES pf2_character_items(id) NOT NULL,
     rune_id integer REFERENCES pf2_items(id) NOT NULL
 );
 

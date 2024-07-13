@@ -166,7 +166,7 @@ diesel::table! {
 diesel::table! {
     pf2_character_item_attached_runes (id) {
         id -> Int4,
-        item_id -> Int4,
+        character_item_id -> Int4,
         rune_id -> Int4,
     }
 }
@@ -458,12 +458,12 @@ diesel::joinable!(pf2_character_damage_type_modifier -> pf2_characters (characte
 diesel::joinable!(pf2_character_feats -> pf2_characters (character_id));
 diesel::joinable!(pf2_character_formula_books -> pf2_characters (character_id));
 diesel::joinable!(pf2_character_formula_books -> pf2_items (item_id));
-diesel::joinable!(pf2_character_item_attached_runes -> pf2_character_items (item_id));
+diesel::joinable!(pf2_character_item_attached_runes -> pf2_character_items (character_item_id));
 diesel::joinable!(pf2_character_item_attached_runes -> pf2_items (rune_id));
 diesel::joinable!(pf2_character_items -> pf2_characters (character_id));
 diesel::joinable!(pf2_character_items -> pf2_items (item_id));
 diesel::joinable!(pf2_character_languages -> pf2_characters (character_id));
-diesel::joinable!(pf2_character_readied_items -> pf2_items (item_id));
+diesel::joinable!(pf2_character_readied_items -> pf2_character_items (item_id));
 diesel::joinable!(pf2_character_senses -> pf2_characters (character_id));
 diesel::joinable!(pf2_character_skills -> pf2_characters (character_id));
 diesel::joinable!(pf2_character_skills -> pf2_skills (skill_id));
@@ -472,7 +472,7 @@ diesel::joinable!(pf2_character_spellcasting_tables -> pf2_characters (character
 diesel::joinable!(pf2_character_spells_prepared -> pf2_character_spell_known (spell_id));
 diesel::joinable!(pf2_character_statuses -> pf2_characters (character_id));
 diesel::joinable!(pf2_character_stored_items -> pf2_character_items (item_id));
-diesel::joinable!(pf2_character_worn_items -> pf2_items (item_id));
+diesel::joinable!(pf2_character_worn_items -> pf2_character_items (item_id));
 diesel::joinable!(pf2_characters -> users (owner));
 diesel::joinable!(pf2_class_features -> pf2_characters (character_id));
 diesel::joinable!(pf2_item_traits -> pf2_items (item_id));
