@@ -9,8 +9,11 @@ use diesel::{r2d2, PgConnection, QueryDsl, SelectableHelper};
 use log::{error, warn};
 
 use crate::auth::AuthorizedData;
+use crate::db::models::ContainedItem;
 use crate::db::schema::pf2_items::item_description;
-use crate::db::schema::{pf2_character_feats, pf2_character_statuses, pf2_item_traits, pf2_items};
+use crate::db::schema::{
+    pf2_character_feats, pf2_character_items, pf2_character_statuses, pf2_item_traits, pf2_items,
+};
 use crate::db::{db_enums, models, schema, user_mgmt};
 
 #[derive(Debug, Deserialize)]
@@ -27,7 +30,7 @@ struct DamageRecievedModifier {
     value: Option<i32>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 struct Description {
     id: i32,
     name: String,
@@ -90,7 +93,7 @@ struct SpellcastingTable {
     spells_prepared: Vec<PreparedSpell>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 struct InventoryItem {
     id: i32, // The id from pf2_character_items
     name: String,
@@ -216,7 +219,57 @@ struct ItemContainer {
     item: InventoryItem,
     bulk_reduction: i32,
     max_bulk: i32,
-    contents: Vec<StoredItem>,
+    contents: Vec<InventoryItem>,
+}
+
+impl ItemContainer {
+    pub fn gen_with_contents(
+        container: models::CharacterContainers,
+        item_info: InventoryItem,
+        conn: &mut PgConnection,
+    ) -> ItemContainer {
+        use schema::{pf2_character_items::dsl::pf2_character_items, pf2_items::dsl::pf2_items};
+
+        let contained_items: Vec<(models::ContainedItem, (models::CharacterItem, models::Item))> =
+            match models::ContainedItem::belonging_to(&container)
+                .inner_join(pf2_character_items.inner_join(pf2_items))
+                .select((
+                    models::ContainedItem::as_select(),
+                    (
+                        models::CharacterItem::as_select(),
+                        models::Item::as_select(),
+                    ),
+                ))
+                .load(conn)
+            {
+                Ok(items) => items,
+                Err(_) => {
+                    return ItemContainer {
+                        id: container.id,
+                        item: item_info,
+                        bulk_reduction: container.bulk_reduction,
+                        max_bulk: container.max_bulk,
+                        contents: Vec::new(),
+                    };
+                }
+            };
+
+        let stored_items: Vec<InventoryItem> = contained_items
+            .into_iter()
+            .filter_map(|(_, (inventory_details, item_details))| {
+                // Skip entries we can't load
+                InventoryItem::gen_item(inventory_details, item_details, conn)
+            })
+            .collect();
+
+        ItemContainer {
+            id: container.id,
+            item: item_info,
+            bulk_reduction: container.bulk_reduction,
+            max_bulk: container.max_bulk,
+            contents: stored_items,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -485,10 +538,29 @@ impl FullCharacterInfo {
             .into_iter()
             .filter_map(|entry| {
                 let (_, inventory_details, item_details) = entry;
+                let item_id = item_details.id;
                 let item = InventoryItem::gen_item(inventory_details, item_details, conn)?;
                 // Check if item is a container
+                let container = match pf2_character_containers
+                    .filter(schema::pf2_character_containers::dsl::item_id.eq(item_id))
+                    .select(models::CharacterContainers::as_select())
+                    .load(conn)
+                {
+                    Ok(c) => c,
+                    Err(e) => {
+                        if e != diesel::result::Error::NotFound {
+                            warn!("DB error {} while checking container", e);
+                        }
+                        // If we fail to get this info, just give the item. It's
+                        return Some(StoredItem::Item(item));
+                    }
+                };
 
-                Some(StoredItem::Item(item))
+                Some(StoredItem::Container(ItemContainer::gen_with_contents(
+                    container[0].clone(),
+                    item.clone(),
+                    conn,
+                )))
             })
             .collect();
 

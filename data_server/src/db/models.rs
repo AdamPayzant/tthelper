@@ -59,16 +59,17 @@ pub struct Shield {
     pub speed_penalty: i32,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Associations, Identifiable)]
+#[diesel(belongs_to(CharacterContainers))]
 #[diesel(table_name = schema::pf2_items_in_containers)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ContainedItem {
     pub id: i32,
-    pub bag_id: i32,
+    pub character_containers_id: i32,
     pub item_id: i32,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Clone)]
 #[diesel(table_name = schema::pf2_items)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Item {
@@ -336,7 +337,7 @@ pub struct DamageTypeModifier {
     pub val: Option<i32>,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Clone)]
 #[diesel(table_name = schema::pf2_character_containers)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterContainers {

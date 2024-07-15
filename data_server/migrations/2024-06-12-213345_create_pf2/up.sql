@@ -370,7 +370,7 @@ CREATE TABLE IF NOT EXISTS pf2_character_containers (
 
 CREATE TABLE IF NOT EXISTS pf2_items_in_containers (
     id serial PRIMARY KEY,
-    bag_id integer REFERENCES pf2_character_items(id)  NOT NULL,
+    character_containers_id integer REFERENCES pf2_character_containers(id)  NOT NULL,
     item_id integer REFERENCES pf2_character_items(id)  NOT NULL
 );
 

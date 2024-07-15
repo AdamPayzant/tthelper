@@ -376,7 +376,7 @@ diesel::table! {
 diesel::table! {
     pf2_items_in_containers (id) {
         id -> Int4,
-        bag_id -> Int4,
+        character_containers_id -> Int4,
         item_id -> Int4,
     }
 }
@@ -477,6 +477,8 @@ diesel::joinable!(pf2_characters -> users (owner));
 diesel::joinable!(pf2_class_features -> pf2_characters (character_id));
 diesel::joinable!(pf2_item_traits -> pf2_items (item_id));
 diesel::joinable!(pf2_item_traits -> pf2_traits (trait_id));
+diesel::joinable!(pf2_items_in_containers -> pf2_character_containers (character_containers_id));
+diesel::joinable!(pf2_items_in_containers -> pf2_character_items (item_id));
 diesel::joinable!(pf2_shield -> pf2_items (item_id));
 diesel::joinable!(pf2_weapon -> pf2_items (item_id));
 diesel::joinable!(pf2_weapon -> pf2_weapon_group (group_id));
