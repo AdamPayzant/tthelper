@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-#[derive(diesel_derive_enum::DbEnum, Debug, Deserialize)]
+#[derive(diesel_derive_enum::DbEnum, Debug, Deserialize, Clone, Copy)]
 #[ExistingTypePath = "crate::db::schema::sql_types::Pf2Ability"]
 pub enum Pf2Ability {
     Strength,
@@ -23,7 +23,7 @@ pub enum Pf2Action {
     TwoToThree,
 }
 
-#[derive(diesel_derive_enum::DbEnum, Debug, Deserialize)]
+#[derive(diesel_derive_enum::DbEnum, Debug, Deserialize, Clone)]
 #[ExistingTypePath = "crate::db::schema::sql_types::Pf2ArmorType"]
 pub enum Pf2ArmorType {
     Unarmored,
@@ -51,7 +51,7 @@ pub enum Pf2DamageTypeModifier {
     Immunity,
 }
 
-#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Deserialize)]
+#[derive(diesel_derive_enum::DbEnum, Clone, Copy, Debug, Deserialize)]
 #[ExistingTypePath = "crate::db::schema::sql_types::Pf2Proficiency"]
 pub enum Pf2Proficiency {
     Untrained,
@@ -81,7 +81,7 @@ pub enum Pf2WeaponCategory {
     Advanced,
 }
 
-#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Deserialize)]
+#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Deserialize, Copy)]
 #[ExistingTypePath = "crate::db::schema::sql_types::Pf2WeaponSpec"]
 pub enum Pf2WeaponSpec {
     None,
@@ -89,7 +89,7 @@ pub enum Pf2WeaponSpec {
     GWS,
 }
 
-#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Deserialize)]
+#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Deserialize, Copy)]
 #[ExistingTypePath = "crate::db::schema::sql_types::Pf2WeaponType"]
 pub enum Pf2WeaponType {
     Melee,

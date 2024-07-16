@@ -92,7 +92,8 @@ pub struct ItemTrait {
     pub trait_id: i32,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Associations, Identifiable)]
+#[diesel(belongs_to(Character))]
 #[diesel(table_name = schema::pf2_class_features)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ClassFeature {
@@ -198,7 +199,8 @@ pub struct CharacterStoredItem {
     pub item_id: i32,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Associations)]
+#[diesel(belongs_to(Character))]
 #[diesel(table_name = schema::pf2_character_statuses)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterStatus {
@@ -249,7 +251,8 @@ pub struct SpellKnown {
     pub heightening: Option<String>,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Associations)]
+#[diesel(belongs_to(Character))]
 #[diesel(table_name = schema::pf2_character_skills)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterSkill {
@@ -261,7 +264,8 @@ pub struct CharacterSkill {
     pub assurance: bool,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Associations)]
+#[diesel(belongs_to(Character))]
 #[diesel(table_name = schema::pf2_character_senses)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Sense {
@@ -279,7 +283,8 @@ pub struct ReadiedItem {
     pub item_id: i32,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Associations)]
+#[diesel(belongs_to(Character))]
 #[diesel(table_name = schema::pf2_character_languages)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterLanguage {
@@ -317,7 +322,8 @@ pub struct FormulaBook {
     pub item_id: i32,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Associations, Identifiable)]
+#[diesel(belongs_to(Character))]
 #[diesel(table_name = schema::pf2_character_feats)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterFeat {
@@ -327,7 +333,8 @@ pub struct CharacterFeat {
     pub description: String,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Associations, Identifiable)]
+#[diesel(belongs_to(Character))]
 #[diesel(table_name = schema::pf2_character_damage_type_modifier)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct DamageTypeModifier {
@@ -347,7 +354,8 @@ pub struct CharacterContainers {
     pub max_bulk: i32,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Associations, Identifiable)]
+#[diesel(belongs_to(Character))]
 #[diesel(table_name = schema::pf2_character_background_ability_bonus)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct BackgroundAbilityBonus {
@@ -356,7 +364,8 @@ pub struct BackgroundAbilityBonus {
     pub ability: db_enums::Pf2Ability,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Associations)]
+#[diesel(belongs_to(Character))]
 #[diesel(table_name = schema::pf2_character_attacks)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterAttack {
@@ -380,7 +389,8 @@ pub struct ArmorTrait {
     pub description: String,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Associations, Identifiable)]
+#[diesel(belongs_to(Character))]
 #[diesel(table_name = schema::pf2_character_ancestry_features)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct AncestryFeature {
@@ -390,7 +400,8 @@ pub struct AncestryFeature {
     pub description: String,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Associations, Identifiable)]
+#[diesel(belongs_to(Character))]
 #[diesel(table_name = schema::pf2_character_ancestry_ability_modifier)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct AncestryModifier {

@@ -9,11 +9,6 @@ use diesel::{r2d2, PgConnection, QueryDsl, SelectableHelper};
 use log::{error, warn};
 
 use crate::auth::AuthorizedData;
-use crate::db::models::ContainedItem;
-use crate::db::schema::pf2_items::item_description;
-use crate::db::schema::{
-    pf2_character_feats, pf2_character_items, pf2_character_statuses, pf2_item_traits, pf2_items,
-};
 use crate::db::{db_enums, models, schema, user_mgmt};
 
 #[derive(Debug, Deserialize)]
@@ -149,7 +144,7 @@ impl InventoryItem {
 
     pub fn gen_item(
         inventory_details: models::CharacterItem,
-        item_details: models::Item,
+        item_details: &models::Item,
         conn: &mut PgConnection,
     ) -> Option<InventoryItem> {
         use schema::{pf2_items::dsl::pf2_items, pf2_traits::dsl::pf2_traits};
@@ -188,8 +183,8 @@ impl InventoryItem {
 
         let item = InventoryItem {
             id: inventory_details.id,
-            name: item_details.item_name,
-            description: item_details.item_description,
+            name: item_details.item_name.clone(),
+            description: item_details.item_description.clone(),
             bulk: item_details.bulk,
             price: item_details.price,
             invested: item_details.invested,
@@ -258,7 +253,7 @@ impl ItemContainer {
             .into_iter()
             .filter_map(|(_, (inventory_details, item_details))| {
                 // Skip entries we can't load
-                InventoryItem::gen_item(inventory_details, item_details, conn)
+                InventoryItem::gen_item(inventory_details, &item_details, conn)
             })
             .collect();
 
@@ -283,13 +278,43 @@ struct Armor {
     id: i32,
     item_details: InventoryItem,
     ac_bonus: i32,
-    max_dex: i32,
+    max_dex: Option<i32>,
     check_penalty: i32,
     speed_penalty: i32,
     str_requirement: i32,
     armor_type: db_enums::Pf2ArmorType,
     armor_group_name: String,
     armor_spec: String,
+}
+
+impl Armor {
+    pub fn is_armor(item_id: i32, item: &InventoryItem, conn: &mut PgConnection) -> Option<Armor> {
+        use schema::{pf2_armor::dsl::pf2_armor, pf2_armor_group::dsl::pf2_armor_group};
+
+        match pf2_armor
+            .inner_join(pf2_armor_group)
+            .filter(schema::pf2_armor::dsl::id.eq(item_id))
+            .select((models::Armor::as_select(), models::ArmorGroup::as_select()))
+            .load(conn)
+        {
+            Ok(res) => {
+                let (entry, group) = &res[0];
+                Some(Armor {
+                    id: entry.id,
+                    item_details: item.clone(),
+                    ac_bonus: entry.ac_bonus,
+                    max_dex: entry.max_dex,
+                    check_penalty: entry.check_penalty,
+                    speed_penalty: entry.speed_penalty,
+                    str_requirement: entry.str_requirement,
+                    armor_type: entry.armor_type.clone(),
+                    armor_group_name: group.group_name.clone(),
+                    armor_spec: group.armor_spec.clone(),
+                })
+            }
+            Err(_) => None,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -303,7 +328,37 @@ struct Shield {
     speed_penalty: i32,
 }
 
-#[derive(Debug, Deserialize)]
+impl Shield {
+    pub fn is_shield(
+        item_id: i32,
+        item: &InventoryItem,
+        conn: &mut PgConnection,
+    ) -> Option<Shield> {
+        use schema::pf2_shield::dsl::pf2_shield;
+
+        match pf2_shield
+            .filter(schema::pf2_shield::dsl::item_id.eq(item_id))
+            .select(models::Shield::as_select())
+            .load(conn)
+        {
+            Ok(e) => {
+                let s = &e[0];
+                Some(Shield {
+                    id: s.id,
+                    item_details: item.clone(),
+                    ac_bonus: s.ac_bonus,
+                    hardness: s.hardness,
+                    hp: s.hp,
+                    bp: s.bp,
+                    speed_penalty: s.speed_penalty,
+                })
+            }
+            Err(_) => None,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Clone)]
 struct Weapon {
     id: i32,
     item_details: InventoryItem,
@@ -316,14 +371,26 @@ struct Weapon {
     weapon_range: Option<i32>,
 }
 
+impl Weapon {
+    pub fn is_weapon(
+        item_id: i32,
+        item: &InventoryItem,
+        conn: &mut PgConnection,
+    ) -> Option<Weapon> {
+        //TODO
+        None
+    }
+}
+
 #[derive(Debug, Deserialize)]
 struct Attack {
     id: i32,
     weapon: Option<Weapon>,
     prof: db_enums::Pf2Proficiency,
-    matck: i32,
+    matk: i32,
     mdmg: i32,
     attack_type: db_enums::Pf2AttackType,
+    damage_die: Option<i32>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -362,7 +429,7 @@ struct FullCharacterInfo {
     cha_bonus: i32,
 
     active_apex_item: Option<String>,
-    active_apex_item_bonus: db_enums::Pf2Ability,
+    active_apex_item_bonus: Option<db_enums::Pf2Ability>,
 
     temp_hp: i32,
     damage: i32,
@@ -432,58 +499,18 @@ struct FullCharacterInfo {
 impl FullCharacterInfo {
     pub fn load_character(conn: &mut PgConnection, id: i32) -> Result<FullCharacterInfo, String> {
         use schema::{
-            pf2_character_ancestry_ability_modifier::dsl::pf2_character_ancestry_ability_modifier,
-            pf2_character_ancestry_features::dsl::pf2_character_ancestry_features,
-            pf2_character_attacks::dsl::pf2_character_attacks,
-            pf2_character_background_ability_bonus::dsl::pf2_character_background_ability_bonus,
             pf2_character_containers::dsl::pf2_character_containers,
-            pf2_character_damage_type_modifier::dsl::pf2_character_damage_type_modifier,
-            pf2_character_feats::dsl::pf2_character_feats,
-            pf2_character_formula_books::dsl::pf2_character_formula_books,
-            pf2_character_item_attached_runes::dsl::pf2_character_item_attached_runes,
             pf2_character_items::dsl::pf2_character_items,
-            pf2_character_languages::dsl::pf2_character_languages,
             pf2_character_readied_items::dsl::pf2_character_readied_items,
-            pf2_character_senses::dsl::pf2_character_senses,
-            pf2_character_skills::dsl::pf2_character_skills,
-            pf2_character_spellcasting_tables::dsl::pf2_character_spellcasting_tables,
-            pf2_character_statuses::dsl::pf2_character_statuses,
             pf2_character_stored_items::dsl::pf2_character_stored_items,
             pf2_character_worn_items::dsl::pf2_character_worn_items, pf2_characters,
-            pf2_class_features::dsl::pf2_class_features, pf2_item_traits::dsl::pf2_item_traits,
-            pf2_items::dsl::pf2_items, pf2_skills::dsl::pf2_skills, pf2_traits::dsl::pf2_traits,
+            pf2_items::dsl::pf2_items, pf2_skills::dsl::pf2_skills,
         };
 
         // This gets the core data for the character
         let res = match pf2_characters::dsl::pf2_characters
-            .inner_join(pf2_character_background_ability_bonus)
-            .inner_join(pf2_character_ancestry_ability_modifier)
-            .inner_join(pf2_character_ancestry_features)
-            .inner_join(pf2_class_features)
-            .inner_join(pf2_character_damage_type_modifier)
-            .inner_join(pf2_character_senses)
-            .inner_join(pf2_character_skills.inner_join(pf2_skills))
-            .inner_join(pf2_character_languages)
-            .inner_join(pf2_character_feats)
-            .inner_join(pf2_character_attacks)
-            .inner_join(pf2_character_statuses)
-            .inner_join(pf2_character_formula_books)
             .filter(pf2_characters::dsl::id.eq(id))
-            .load::<(
-                models::Character,
-                models::BackgroundAbilityBonus,
-                models::AncestryModifier,
-                models::AncestryFeature,
-                models::ClassFeature,
-                models::DamageTypeModifier,
-                models::Sense,
-                (models::CharacterSkill, models::Skill),
-                models::CharacterLanguage,
-                models::CharacterFeat,
-                models::CharacterAttack,
-                models::CharacterStatus,
-                models::FormulaBook,
-            )>(conn)
+            .load::<models::Character>(conn)
         {
             Ok(entry) => entry,
             Err(_) => return Err("Failed to access entry in database".to_owned()),
@@ -497,24 +524,239 @@ impl FullCharacterInfo {
             return Err("Internal db error".to_owned());
         }
 
-        let (
-            character,
-            background_bonuses,
-            ancestry_modifiers,
-            ancestry_features,
-            class_features,
-            damage_modifiers,
-            senses,
-            (character_skills, skill_details),
-            languages,
-            feats,
-            attacks,
-            statuses,
-            formulas,
-        ) = &res[0];
+        let character: &models::Character = &res[0];
+
+        let background_boosts: Vec<AbilityModifier> =
+            match models::BackgroundAbilityBonus::belonging_to(character)
+                .select(models::BackgroundAbilityBonus::as_select())
+                .load(conn)
+            {
+                Ok(f) => f,
+                Err(e) => {
+                    if e != diesel::result::Error::NotFound {
+                        warn!("DB error getting feats for character {}", character.id);
+                    }
+                    Vec::new()
+                }
+            }
+            .into_iter()
+            .map(|modifier| AbilityModifier {
+                id: modifier.id,
+                ability: modifier.ability,
+                is_positive_boost: true,
+            })
+            .collect();
+
+        let ancestry_modifiers: Vec<AbilityModifier> =
+            match models::AncestryModifier::belonging_to(character)
+                .select(models::AncestryModifier::as_select())
+                .load(conn)
+            {
+                Ok(f) => f,
+                Err(e) => {
+                    if e != diesel::result::Error::NotFound {
+                        warn!("DB error getting feats for character {}", character.id);
+                    }
+                    Vec::new()
+                }
+            }
+            .into_iter()
+            .map(|modifier| AbilityModifier {
+                id: modifier.id,
+                ability: modifier.ability,
+                is_positive_boost: modifier.positive_boost,
+            })
+            .collect();
+
+        let ancestry_features: Vec<AncestryFeature> =
+            match models::AncestryFeature::belonging_to(character)
+                .select(models::AncestryFeature::as_select())
+                .load(conn)
+            {
+                Ok(val) => val,
+                Err(e) => {
+                    if e != diesel::result::Error::NotFound {
+                        warn!("DB error getting feats for character {}", character.id);
+                    }
+                    Vec::new()
+                }
+            }
+            .into_iter()
+            .map(|feature| AncestryFeature {
+                id: feature.id,
+                name: feature.title,
+                description: feature.description,
+            })
+            .collect();
+
+        let feats: Vec<Feat> = match models::CharacterFeat::belonging_to(character)
+            .select(models::CharacterFeat::as_select())
+            .load(conn)
+        {
+            Ok(f) => f,
+            Err(e) => {
+                if e != diesel::result::Error::NotFound {
+                    warn!("DB error getting feats for character {}", character.id);
+                }
+                Vec::new()
+            }
+        }
+        .into_iter()
+        .map(|feat| Feat {
+            id: feat.id,
+            name: feat.title,
+            description: feat.description,
+        })
+        .collect();
+
+        let class_features: Vec<ClassFeature> = match models::ClassFeature::belonging_to(character)
+            .select(models::ClassFeature::as_select())
+            .load(conn)
+        {
+            Ok(f) => f,
+            Err(e) => {
+                if e != diesel::result::Error::NotFound {
+                    warn!("DB error getting feats for character {}", character.id);
+                }
+                Vec::new()
+            }
+        }
+        .into_iter()
+        .map(|feature| Feat {
+            id: feature.id,
+            name: feature.title,
+            description: feature.description,
+        })
+        .collect();
+
+        let damage_modifiers: Vec<DamageRecievedModifier> =
+            match models::DamageTypeModifier::belonging_to(character)
+                .select(models::DamageTypeModifier::as_select())
+                .load(conn)
+            {
+                Ok(f) => f,
+                Err(e) => {
+                    if e != diesel::result::Error::NotFound {
+                        warn!("DB error getting feats for character {}", character.id);
+                    }
+                    Vec::new()
+                }
+            }
+            .into_iter()
+            .map(|modifier| DamageRecievedModifier {
+                id: modifier.id,
+                modifier_type: modifier.modifier,
+                value: modifier.val,
+            })
+            .collect();
+
+        let senses: Vec<Sense> = match models::Sense::belonging_to(character)
+            .select(models::Sense::as_select())
+            .load(conn)
+        {
+            Ok(f) => f,
+            Err(e) => {
+                if e != diesel::result::Error::NotFound {
+                    warn!("DB error getting feats for character {}", character.id);
+                }
+                Vec::new()
+            }
+        }
+        .into_iter()
+        .map(|sense| Sense {
+            id: sense.id,
+            name: sense.sense_name,
+            description: sense.sense_description,
+        })
+        .collect();
+
+        let skills: Vec<Skill> = match models::CharacterSkill::belonging_to(character)
+            .inner_join(pf2_skills)
+            .select((
+                models::CharacterSkill::as_select(),
+                models::Skill::as_select(),
+            ))
+            .load(conn)
+        {
+            Ok(f) => f,
+            Err(e) => {
+                if e != diesel::result::Error::NotFound {
+                    warn!("DB error getting feats for character {}", character.id);
+                }
+                Vec::new()
+            }
+        }
+        .into_iter()
+        .map(|(character_details, skill_details)| Skill {
+            id: character_details.id,
+            skill: skill_details.title,
+            ability: skill_details.ability,
+            proficiency: character_details.proficiency,
+            bonuses: character_details.bonuses,
+            assurance: character_details.assurance,
+        })
+        .collect();
+
+        let languages: Vec<String> = match models::CharacterLanguage::belonging_to(character)
+            .select(models::CharacterLanguage::as_select())
+            .load(conn)
+        {
+            Ok(f) => f,
+            Err(e) => {
+                if e != diesel::result::Error::NotFound {
+                    warn!("DB error getting languages for character {}", character.id);
+                }
+                Vec::new()
+            }
+        }
+        .into_iter()
+        .map(|l| l.title)
+        .collect();
+
+        let feats: Vec<Feat> = match models::CharacterFeat::belonging_to(character)
+            .select(models::CharacterFeat::as_select())
+            .load(conn)
+        {
+            Ok(f) => f,
+            Err(e) => {
+                if e != diesel::result::Error::NotFound {
+                    warn!("DB error getting feats for character {}", character.id);
+                }
+                Vec::new()
+            }
+        }
+        .into_iter()
+        .map(|f| Feat {
+            id: f.id,
+            name: f.title,
+            description: f.description,
+        })
+        .collect();
+
+        let statuses: Vec<Status> = match models::CharacterStatus::belonging_to(character)
+            .select(models::CharacterStatus::as_select())
+            .load(conn)
+        {
+            Ok(s) => s,
+            Err(e) => {
+                if e != diesel::result::Error::NotFound {
+                    warn!("DB error getting statuses for character {}", character.id);
+                }
+                Vec::new()
+            }
+        }
+        .into_iter()
+        .map(|s| Status {
+            id: s.id,
+            name: s.status_name,
+            description: s.status_description,
+        })
+        .collect();
+
+        let formulas: Vec<Formula> = Vec::new();
 
         // Get items
-        let stored_items_data = match pf2_character_stored_items
+        let stored_items: Vec<StoredItem> = match pf2_character_stored_items
             .inner_join(pf2_character_items)
             .inner_join(
                 pf2_items
@@ -529,44 +771,235 @@ impl FullCharacterInfo {
             .load(conn)
         {
             Ok(e) => e,
-            Err(_) => {
-                return Err("Failed getting inventory from DB".to_string());
-            }
-        };
-
-        let stored_items: Vec<StoredItem> = stored_items_data
-            .into_iter()
-            .filter_map(|entry| {
-                let (_, inventory_details, item_details) = entry;
-                let item_id = item_details.id;
-                let item = InventoryItem::gen_item(inventory_details, item_details, conn)?;
-                // Check if item is a container
-                let container = match pf2_character_containers
-                    .filter(schema::pf2_character_containers::dsl::item_id.eq(item_id))
-                    .select(models::CharacterContainers::as_select())
-                    .load(conn)
-                {
-                    Ok(c) => c,
-                    Err(e) => {
-                        if e != diesel::result::Error::NotFound {
-                            warn!("DB error {} while checking container", e);
-                        }
-                        // If we fail to get this info, just give the item. It's
-                        return Some(StoredItem::Item(item));
+            Err(_) => Vec::new(),
+        }
+        .into_iter()
+        .filter_map(|entry| {
+            let (_, inventory_details, item_details) = entry;
+            let item_id = item_details.id;
+            let item = InventoryItem::gen_item(inventory_details, &item_details, conn)?;
+            // Check if item is a container
+            let container = match pf2_character_containers
+                .filter(schema::pf2_character_containers::dsl::item_id.eq(item_id))
+                .select(models::CharacterContainers::as_select())
+                .load(conn)
+            {
+                Ok(c) => c,
+                Err(e) => {
+                    if e != diesel::result::Error::NotFound {
+                        warn!("DB error {} while checking container", e);
                     }
-                };
+                    // If we fail to get this info, just give the item. It's
+                    return Some(StoredItem::Item(item));
+                }
+            };
 
-                Some(StoredItem::Container(ItemContainer::gen_with_contents(
-                    container[0].clone(),
-                    item.clone(),
-                    conn,
-                )))
-            })
-            .collect();
+            Some(StoredItem::Container(ItemContainer::gen_with_contents(
+                container[0].clone(),
+                item.clone(),
+                conn,
+            )))
+        })
+        .collect();
+
+        let mut weapons: Vec<Weapon> = Vec::new();
+        let readied_items: Vec<InventoryItem> = match pf2_character_readied_items
+            .inner_join(pf2_character_items)
+            .inner_join(
+                pf2_items
+                    .on(schema::pf2_character_items::dsl::item_id.eq(schema::pf2_items::dsl::id)),
+            )
+            .filter(schema::pf2_character_items::dsl::character_id.eq(id))
+            .select((
+                models::ReadiedItem::as_select(),
+                models::CharacterItem::as_select(),
+                models::Item::as_select(),
+            ))
+            .load(conn)
+        {
+            Ok(entries) => entries,
+            Err(e) => {
+                warn!("Failed loading readied items from database {}", e);
+                Vec::new()
+            }
+        }
+        .into_iter()
+        .filter_map(|(_, inventory_details, item_details)| {
+            match InventoryItem::gen_item(inventory_details, &item_details, conn) {
+                Some(item) => match Weapon::is_weapon(item_details.id, &item, conn) {
+                    Some(w) => {
+                        weapons.push(w);
+                        None
+                    }
+                    None => Some(item),
+                },
+                None => None,
+            }
+        })
+        .collect();
+
+        // Now that we have weapons, lets get the attacks
+        let attacks: Vec<Attack> = match models::CharacterAttack::belonging_to(character)
+            .select(models::CharacterAttack::as_select())
+            .load(conn)
+        {
+            Ok(e) => e,
+            Err(e) => {
+                if e != diesel::result::Error::NotFound {
+                    warn!("DB error getting attacks for character {}", character.id);
+                }
+                Vec::new()
+            }
+        }
+        .into_iter()
+        .map(|a: models::CharacterAttack| Attack {
+            id: a.id,
+            weapon: match a.item_id {
+                Some(weapon_id) => match weapons.iter().find(|w| w.item_details.id == weapon_id) {
+                    Some(w) => Some(w.clone()),
+                    None => None,
+                },
+                None => None,
+            },
+            prof: a.proficiency,
+            matk: a.matk,
+            mdmg: a.mdmg,
+            attack_type: a.attack_type,
+            damage_die: a.damage_die,
+        })
+        .collect();
+
+        let mut armor: Option<Armor> = None;
+        let mut shield: Option<Shield> = None;
+        let worn_items: Vec<InventoryItem> = match pf2_character_worn_items
+            .inner_join(pf2_character_items)
+            .inner_join(
+                pf2_items
+                    .on(schema::pf2_character_items::dsl::item_id.eq(schema::pf2_items::dsl::id)),
+            )
+            .filter(schema::pf2_character_items::dsl::character_id.eq(id))
+            .select((
+                models::CharacterWornItem::as_select(),
+                models::CharacterItem::as_select(),
+                models::Item::as_select(),
+            ))
+            .load(conn)
+        {
+            Ok(entries) => entries,
+            Err(e) => {
+                warn!("Failed loading worn items from database {}", e);
+                Vec::new()
+            }
+        }
+        .into_iter()
+        .filter_map(|(_, inventory_details, item_details)| {
+            match InventoryItem::gen_item(inventory_details, &item_details, conn) {
+                Some(item) => match Armor::is_armor(item_details.id, &item, conn) {
+                    Some(a) => {
+                        armor = Some(a);
+                        None
+                    }
+                    None => match Shield::is_shield(item_details.id, &item, conn) {
+                        Some(s) => {
+                            shield = Some(s);
+                            None
+                        }
+                        None => Some(item),
+                    },
+                },
+                None => None,
+            }
+        })
+        .collect();
 
         // Get Spellcasting
+        let casting_tables: Vec<SpellcastingTable> = Vec::new();
 
-        Err("Unreachable".to_owned())
+        Ok(FullCharacterInfo {
+            id: character.id,
+            name: character.character_name.clone(),
+            alignment: character.alignment.clone(),
+            ancestry: character.ancestry.clone(),
+            background: character.background.clone(),
+            class: character.character_class.clone(),
+            key_ability: character.key_ability.clone(),
+            lvl: character.lvl,
+            hero_points: character.hero_points,
+
+            str_bonus: character.str_bonus,
+            dex_bonus: character.dex_bonus,
+            con_bonus: character.con_bonus,
+            int_bonus: character.int_bonus,
+            wis_bonus: character.wis_bonus,
+            cha_bonus: character.cha_bonus,
+
+            active_apex_item: character.active_apex_item.clone(),
+            active_apex_item_bonus: character.active_apex_item_bonus,
+
+            temp_hp: character.temp_hp,
+            damage: character.damage,
+            dying: character.dying,
+            wound: character.wound,
+            doom: character.doom,
+
+            fort_prof: character.fort_prof,
+            fort_misc_bonus: character.fort_misc_bonus,
+            refl_prof: character.refl_prof,
+            refl_misc_bonus: character.refl_misc_bonus,
+            will_prof: character.will_prof,
+            will_misc_bonus: character.will_misc_bonus,
+            perception_prof: character.perception_prof,
+            perception_misc_bonus: character.perception_misc_bonus,
+
+            base_land_speed: character.base_land_speed,
+            base_fly_speed: character.base_fly_speed,
+            base_swim_speed: character.base_swim_speed,
+            base_burrow_speed: character.base_burrow_speed,
+            base_climb_speed: character.base_climb_speed,
+
+            max_focus_points: character.max_focus_points,
+            current_focus_points: character.current_focus_points,
+
+            simple_weapon_prof: character.simple_weapon_prof,
+            martial_weapon_prof: character.martial_weapon_prof,
+            weapon_spec: character.weapon_spec,
+
+            unarmored_prof: character.unarmored_prof,
+            light_armor_prof: character.light_armor_prof,
+            med_armor_prof: character.med_armor_prof,
+            heavy_armor_prof: character.heavy_armor_prof,
+
+            class_prof: character.class_prof,
+
+            background_ability_boosts: background_boosts,
+            ancestry_ability_boosts: ancestry_modifiers,
+
+            ancestry_features,
+            class_features,
+            damage_recieved_mods: damage_modifiers,
+
+            senses,
+            skills,
+            languages,
+
+            feats,
+
+            stored_items,
+            readied_items,
+            worn_items, // Excludes Armor/shield
+
+            armor,
+            shield,
+
+            weapons,
+            attacks,
+
+            casting_tables,
+
+            statuses,
+
+            formula_book: formulas,
+        })
     }
 }
 
