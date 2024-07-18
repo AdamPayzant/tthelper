@@ -93,15 +93,15 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::resource("/auth")
                     .route(web::post().to(auth::login))
-                    .route(web::delete().to(auth::logout)),
+                    .route(web::delete().to(auth::logout))
+                    .route(web::get().to(auth::test_auth)),
             )
-            .service(auth::test_auth)
             .service(register_user)
             .service(
-                web::resource("/data")
-                    .route(web::put().to(pf2_services::create_new_character))
-                    .route(web::get().to(pf2_services::get_full_character)),
+                web::resource("/character")
+                    .route(web::put().to(pf2_services::create_new_character)),
             )
+            .service(pf2_services::get_full_character)
     })
     .bind(server_addr)?
     .run()

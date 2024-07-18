@@ -8,7 +8,7 @@ use diesel::{r2d2, PgConnection, QueryDsl, SelectableHelper};
 
 use log::{error, warn};
 
-use crate::auth::AuthorizedData;
+use crate::auth;
 use crate::db::{db_enums, models, schema, user_mgmt};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -1137,21 +1137,26 @@ pub struct NewCharacterAPI {
 }
 
 pub async fn create_new_character(
-    character_data: web::Json<AuthorizedData<NewCharacterAPI>>,
-    session: Session,
+    req: HttpRequest,
+    character_data: web::Json<NewCharacterAPI>,
     pool: web::Data<r2d2::Pool<r2d2::ConnectionManager<PgConnection>>>,
 ) -> actix_web::Result<impl Responder> {
     use schema::pf2_characters;
     use schema::users;
 
+    if !auth::verify_header_token(req.headers()) {
+        return Ok(HttpResponse::Unauthorized().json("User token not authenticated"));
+    }
+
     // Get the user's id from their username, gives a chance
-    let user = character_data.get_user();
-    let data = match character_data.get_verified_request(&session) {
-        Ok(d) => d,
-        Err(_) => {
-            return Ok(HttpResponse::Unauthorized().finish());
-        }
-    };
+    let user = req
+        .headers()
+        .get("user")
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_owned();
+    let data = character_data.0;
 
     let mut conn = pool.get().unwrap();
     let user_entry = match users::dsl::users
@@ -1206,19 +1211,18 @@ pub struct CharacterDetails {
     character_name: String,
 }
 
+#[get("/character")]
 pub async fn get_character_list(
-    username: web::Json<AuthorizedData<String>>,
-    session: Session,
+    req: HttpRequest,
+    username: web::Json<String>,
     pool: web::Data<r2d2::Pool<r2d2::ConnectionManager<PgConnection>>>,
 ) -> actix_web::Result<impl Responder> {
     use schema::pf2_characters;
 
-    let user = match username.get_verified_request(&session) {
-        Ok(s) => s,
-        Err(()) => {
-            return Ok(HttpResponse::Unauthorized().body("User not authenticated"));
-        }
-    };
+    if !auth::verify_header_token(req.headers()) {
+        return Ok(HttpResponse::Unauthorized().json("User token not valid"));
+    }
+    let user = &username.0;
 
     let mut conn = pool.get().unwrap();
     let uid = user_mgmt::get_uid(&mut conn, user).unwrap();
@@ -1247,25 +1251,23 @@ pub async fn get_character_list(
     Ok(HttpResponse::Ok().json(list))
 }
 
-#[derive(Debug, Deserialize)]
-pub struct CharacterRequest {
-    character_id: i32,
-}
-
+#[get("/character/{character_id}")]
 pub async fn get_full_character(
-    request: web::Json<AuthorizedData<CharacterRequest>>,
-    session: Session,
+    req: HttpRequest,
     pool: web::Data<r2d2::Pool<r2d2::ConnectionManager<PgConnection>>>,
 ) -> actix_web::Result<impl Responder> {
-    let user = match request.get_verified_request(&session) {
-        Ok(u) => u,
-        Err(()) => {
-            return Ok(HttpResponse::Unauthorized().json("User authentication failed".to_string()));
-        }
-    };
+    if !auth::verify_header_token(req.headers()) {
+        return Ok(HttpResponse::Unauthorized().json("User token not authenticated"));
+    }
     let mut conn = pool.get().unwrap();
+    let character_id: i32 = req
+        .match_info()
+        .get("character_id")
+        .unwrap()
+        .parse()
+        .unwrap();
 
-    match FullCharacterInfo::load_character(&mut conn, user.character_id) {
+    match FullCharacterInfo::load_character(&mut conn, character_id) {
         Ok(c) => Ok(HttpResponse::Ok().json(c)),
         Err(e) => Ok(HttpResponse::InternalServerError().json(e)),
     }

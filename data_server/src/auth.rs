@@ -1,5 +1,5 @@
 use actix_session::Session;
-use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, http::header::HeaderMap, web, HttpRequest, HttpResponse, Responder};
 use chrono::Utc;
 use diesel::{r2d2, PgConnection};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation};
@@ -14,24 +14,9 @@ const TOKEN_LIFESPAN: i64 = 60 * 60 * 24 * 7; // 1 week
 pub static KEY: [u8; 16] = *include_bytes!("../secret.key");
 
 #[derive(Debug, Deserialize)]
-pub struct AuthorizedData<T> {
+pub struct AuthDetails {
     user: String,
     token: String,
-    data: T,
-}
-
-impl<T> AuthorizedData<T> {
-    pub fn get_verified_request(&self, session: &Session) -> Result<&T, ()> {
-        if verify_token(self.user.clone(), self.token.clone(), session) {
-            Ok(&self.data)
-        } else {
-            Err(())
-        }
-    }
-
-    pub fn get_user(&self) -> String {
-        self.user.clone()
-    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -59,12 +44,43 @@ pub struct ClientErrResponse {
     error_details: String,
 }
 
-pub fn verify_token(user: String, token: String, session: &Session) -> bool {
+pub fn verify_token(user: String, token: String) -> bool {
     let mut validation = Validation::new(jsonwebtoken::Algorithm::HS256);
     validation.sub = Some(user);
     match jsonwebtoken::decode::<UserToken>(&token, &DecodingKey::from_secret(&KEY), &validation) {
         Ok(_) => true,
         Err(_) => false,
+    }
+}
+
+pub fn verify_header_token(header: &HeaderMap) -> bool {
+    let user: String = match header.get("user") {
+        Some(val) => match val.to_str() {
+            Ok(s) => s.to_owned(),
+            Err(_) => {
+                return false;
+            }
+        },
+        None => {
+            return false;
+        }
+    };
+    let token: String = match header.get("access_token") {
+        Some(val) => match val.to_str() {
+            Ok(s) => s.to_owned(),
+            Err(_) => {
+                return false;
+            }
+        },
+        None => {
+            return false;
+        }
+    };
+
+    if verify_token(user, token) {
+        true
+    } else {
+        false
     }
 }
 
@@ -148,18 +164,10 @@ pub async fn logout(
     Ok(HttpResponse::Ok().finish())
 }
 
-#[get("/auth/{user}/{token}")]
-pub async fn test_auth(
-    req: HttpRequest,
-    // token: web::Json<String>,
-    session: Session,
-) -> actix_web::Result<impl Responder> {
-    let user: String = req.match_info().get("user").unwrap().parse().unwrap();
-    let token: String = req.match_info().get("token").unwrap().parse().unwrap();
-
-    if verify_token(user, token, &session) {
-        Ok(HttpResponse::Ok().finish())
+pub async fn test_auth(req: HttpRequest) -> actix_web::Result<impl Responder> {
+    if verify_header_token(req.headers()) {
+        Ok(HttpResponse::Ok())
     } else {
-        Ok(HttpResponse::Unauthorized().finish())
+        Ok(HttpResponse::Unauthorized())
     }
 }
