@@ -1,6 +1,6 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(diesel_derive_enum::DbEnum, Debug, Deserialize, Clone, Copy)]
+#[derive(diesel_derive_enum::DbEnum, Debug, Serialize, Deserialize, Clone, Copy)]
 #[ExistingTypePath = "crate::db::schema::sql_types::Pf2Ability"]
 pub enum Pf2Ability {
     Strength,
@@ -11,7 +11,7 @@ pub enum Pf2Ability {
     Charisma,
 }
 
-#[derive(diesel_derive_enum::DbEnum, Debug, Deserialize)]
+#[derive(diesel_derive_enum::DbEnum, Debug, Serialize, Deserialize)]
 #[ExistingTypePath = "crate::db::schema::sql_types::Pf2Action"]
 pub enum Pf2Action {
     Free,
@@ -23,7 +23,7 @@ pub enum Pf2Action {
     TwoToThree,
 }
 
-#[derive(diesel_derive_enum::DbEnum, Debug, Deserialize, Clone)]
+#[derive(diesel_derive_enum::DbEnum, Debug, Serialize, Deserialize, Clone)]
 #[ExistingTypePath = "crate::db::schema::sql_types::Pf2ArmorType"]
 pub enum Pf2ArmorType {
     Unarmored,
@@ -32,7 +32,7 @@ pub enum Pf2ArmorType {
     Heavy,
 }
 
-#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Deserialize)]
+#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Serialize, Deserialize)]
 #[ExistingTypePath = "crate::db::schema::sql_types::Pf2AttackType"]
 pub enum Pf2AttackType {
     StrStr,
@@ -43,7 +43,7 @@ pub enum Pf2AttackType {
     Athletics,
 }
 
-#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Deserialize)]
+#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Serialize, Deserialize)]
 #[ExistingTypePath = "crate::db::schema::sql_types::Pf2DamageTypeModifier"]
 pub enum Pf2DamageTypeModifier {
     Weakness,
@@ -51,7 +51,7 @@ pub enum Pf2DamageTypeModifier {
     Immunity,
 }
 
-#[derive(diesel_derive_enum::DbEnum, Clone, Copy, Debug, Deserialize)]
+#[derive(diesel_derive_enum::DbEnum, Clone, Copy, Debug, Serialize, Deserialize)]
 #[ExistingTypePath = "crate::db::schema::sql_types::Pf2Proficiency"]
 pub enum Pf2Proficiency {
     Untrained,
@@ -61,7 +61,7 @@ pub enum Pf2Proficiency {
     Legendary,
 }
 
-#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Deserialize)]
+#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Serialize, Deserialize, Copy)]
 #[ExistingTypePath = "crate::db::schema::sql_types::Pf2SpellTradition"]
 pub enum Pf2SpellTradition {
     Arcane,
@@ -72,7 +72,7 @@ pub enum Pf2SpellTradition {
     Focus,
 }
 
-#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Deserialize)]
+#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Serialize, Deserialize, Copy)]
 #[ExistingTypePath = "crate::db::schema::sql_types::Pf2WeaponCategory"]
 pub enum Pf2WeaponCategory {
     Unarmed,
@@ -81,7 +81,7 @@ pub enum Pf2WeaponCategory {
     Advanced,
 }
 
-#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Deserialize, Copy)]
+#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Serialize, Deserialize, Copy)]
 #[ExistingTypePath = "crate::db::schema::sql_types::Pf2WeaponSpec"]
 pub enum Pf2WeaponSpec {
     None,
@@ -89,7 +89,7 @@ pub enum Pf2WeaponSpec {
     GWS,
 }
 
-#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Deserialize, Copy)]
+#[derive(diesel_derive_enum::DbEnum, Clone, Debug, Serialize, Deserialize, Copy)]
 #[ExistingTypePath = "crate::db::schema::sql_types::Pf2WeaponType"]
 pub enum Pf2WeaponType {
     Melee,

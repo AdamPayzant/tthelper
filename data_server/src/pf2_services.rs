@@ -11,21 +11,21 @@ use log::{error, warn};
 use crate::auth::AuthorizedData;
 use crate::db::{db_enums, models, schema, user_mgmt};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct AbilityModifier {
     id: i32,
     ability: db_enums::Pf2Ability,
     is_positive_boost: bool,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct DamageRecievedModifier {
     id: i32,
     modifier_type: db_enums::Pf2DamageTypeModifier,
     value: Option<i32>,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct Description {
     id: i32,
     name: String,
@@ -38,7 +38,7 @@ type Sense = Description;
 type ClassFeature = Description;
 type AncestryFeature = Description;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Skill {
     id: i32,
     skill: String,
@@ -49,7 +49,7 @@ struct Skill {
     assurance: bool,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Spell {
     id: i32,
     name: String,
@@ -63,14 +63,80 @@ struct Spell {
     area: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+impl Spell {
+    pub fn get_list_of_spells(
+        table: &models::SpellcastingTable,
+        conn: &mut PgConnection,
+    ) -> Vec<Spell> {
+        match models::SpellKnown::belonging_to(table)
+            .select(models::SpellKnown::as_select())
+            .load(conn)
+        {
+            Ok(entries) => entries
+                .into_iter()
+                .map(|e: models::SpellKnown| Spell {
+                    id: e.id,
+                    name: e.spell_name,
+                    description: e.spell_description,
+                    heightening: e.heightening,
+                    action_length: e.action_length,
+                    base_level: e.base_level,
+                    duration: e.duration,
+                    spell_range: e.spell_range,
+                    area: e.area,
+                })
+                .collect(),
+            Err(e) => {
+                if e != diesel::result::Error::NotFound {
+                    warn!("DB error getting spells known for list {}", table.id);
+                }
+                return Vec::new();
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 struct PreparedSpell {
     id: i32,
-    spell: Spell,
+    spell_id: i32,
     level_prepared: i32,
 }
 
-#[derive(Debug, Deserialize)]
+impl PreparedSpell {
+    pub fn get_list_of_prepped_spells(
+        table: &models::SpellcastingTable,
+        conn: &mut PgConnection,
+    ) -> Option<Vec<PreparedSpell>> {
+        if table.spontaneous {
+            return None;
+        }
+
+        match models::SpellsPrepared::belonging_to(table)
+            .select(models::SpellsPrepared::as_select())
+            .load(conn)
+        {
+            Ok(entries) => Some(
+                entries
+                    .into_iter()
+                    .map(|e: models::SpellsPrepared| PreparedSpell {
+                        id: e.id,
+                        spell_id: e.spell_id,
+                        level_prepared: e.level_prepared,
+                    })
+                    .collect(),
+            ),
+            Err(e) => {
+                if e != diesel::result::Error::NotFound {
+                    warn!("DB error getting spells prepared for list {}", table.id);
+                }
+                return Some(Vec::new());
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 struct SpellcastingTable {
     id: i32,
     tradition: db_enums::Pf2SpellTradition,
@@ -78,17 +144,17 @@ struct SpellcastingTable {
     prof: db_enums::Pf2Proficiency,
     spontaneous: bool,
 
-    casts_per_day: [i32; 10],
-    num_spells_known: [i32; 10],
+    casts_per_day: Vec<Option<i32>>,
+    num_spells_known: Vec<Option<i32>>,
 
     item_bonus: i32,
     misc_bonus: i32,
 
     spells_known: Vec<Spell>,
-    spells_prepared: Vec<PreparedSpell>,
+    spells_prepared: Option<Vec<PreparedSpell>>,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct InventoryItem {
     id: i32, // The id from pf2_character_items
     name: String,
@@ -208,7 +274,7 @@ impl InventoryItem {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct ItemContainer {
     id: i32,
     item: InventoryItem,
@@ -267,13 +333,13 @@ impl ItemContainer {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 enum StoredItem {
     Container(ItemContainer),
     Item(InventoryItem),
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Armor {
     id: i32,
     item_details: InventoryItem,
@@ -317,7 +383,7 @@ impl Armor {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Shield {
     id: i32,
     item_details: InventoryItem,
@@ -358,7 +424,7 @@ impl Shield {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 struct Weapon {
     id: i32,
     item_details: InventoryItem,
@@ -377,12 +443,36 @@ impl Weapon {
         item: &InventoryItem,
         conn: &mut PgConnection,
     ) -> Option<Weapon> {
-        //TODO
-        None
+        use schema::{pf2_weapon::dsl::pf2_weapon, pf2_weapon_group::dsl::pf2_weapon_group};
+        match pf2_weapon
+            .inner_join(pf2_weapon_group)
+            .filter(schema::pf2_weapon::dsl::id.eq(item_id))
+            .select((
+                models::Weapon::as_select(),
+                models::WeaponGroup::as_select(),
+            ))
+            .load(conn)
+        {
+            Ok(res) => {
+                let (weapon, group) = &res[0];
+                Some(Weapon {
+                    id: weapon.id,
+                    item_details: item.clone(),
+                    weapon_type: weapon.weapon_type,
+                    weapon_cat: weapon.weapon_cat,
+                    group_name: group.group_name.clone(),
+                    crit_spec: group.crit_spec.clone(),
+                    damage_die: weapon.damage_die,
+                    hands: weapon.hands.clone(),
+                    weapon_range: weapon.weapon_range,
+                })
+            }
+            Err(_) => None,
+        }
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Attack {
     id: i32,
     weapon: Option<Weapon>,
@@ -393,23 +483,25 @@ struct Attack {
     damage_die: Option<i32>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Status {
     id: i32,
     name: String,
     description: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Formula {
+    id: i32,
     item_id: i32,
     item_name: String,
     level: i32,
+    item_value: i32,
 }
 
 // A large structure to send full character details to a client.
 // Ideally this should only be sent once when the character is requested
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct FullCharacterInfo {
     id: i32,
     name: String,
@@ -589,26 +681,6 @@ impl FullCharacterInfo {
             })
             .collect();
 
-        let feats: Vec<Feat> = match models::CharacterFeat::belonging_to(character)
-            .select(models::CharacterFeat::as_select())
-            .load(conn)
-        {
-            Ok(f) => f,
-            Err(e) => {
-                if e != diesel::result::Error::NotFound {
-                    warn!("DB error getting feats for character {}", character.id);
-                }
-                Vec::new()
-            }
-        }
-        .into_iter()
-        .map(|feat| Feat {
-            id: feat.id,
-            name: feat.title,
-            description: feat.description,
-        })
-        .collect();
-
         let class_features: Vec<ClassFeature> = match models::ClassFeature::belonging_to(character)
             .select(models::ClassFeature::as_select())
             .load(conn)
@@ -753,7 +825,28 @@ impl FullCharacterInfo {
         })
         .collect();
 
-        let formulas: Vec<Formula> = Vec::new();
+        let formulas: Vec<Formula> = match models::FormulaBook::belonging_to(character)
+            .inner_join(pf2_items)
+            .select((models::FormulaBook::as_select(), models::Item::as_select()))
+            .load(conn)
+        {
+            Ok(s) => s,
+            Err(e) => {
+                if e != diesel::result::Error::NotFound {
+                    warn!("DB error getting formulas for character {}", character.id);
+                }
+                Vec::new()
+            }
+        }
+        .into_iter()
+        .map(|(form, item)| Formula {
+            id: form.id,
+            item_id: item.id,
+            item_name: item.item_name,
+            level: item.lvl,
+            item_value: item.price,
+        })
+        .collect();
 
         // Get items
         let stored_items: Vec<StoredItem> = match pf2_character_stored_items
@@ -913,7 +1006,37 @@ impl FullCharacterInfo {
         .collect();
 
         // Get Spellcasting
-        let casting_tables: Vec<SpellcastingTable> = Vec::new();
+        let casting_tables: Vec<SpellcastingTable> =
+            match models::SpellcastingTable::belonging_to(character)
+                .select(models::SpellcastingTable::as_select())
+                .load(conn)
+            {
+                Ok(s) => s,
+                Err(e) => {
+                    if e != diesel::result::Error::NotFound {
+                        warn!(
+                            "DB error getting spellcasting tables for character {}",
+                            character.id
+                        );
+                    }
+                    Vec::new()
+                }
+            }
+            .into_iter()
+            .map(|t: models::SpellcastingTable| SpellcastingTable {
+                id: t.id,
+                tradition: t.tradition,
+                ability: t.ability,
+                prof: t.proficiency,
+                spontaneous: t.spontaneous,
+                casts_per_day: t.casts_per_day.clone(),
+                num_spells_known: t.spells_known.clone(),
+                item_bonus: t.item_bonus,
+                misc_bonus: t.misc_bonus,
+                spells_known: Spell::get_list_of_spells(&t, conn),
+                spells_prepared: PreparedSpell::get_list_of_prepped_spells(&t, conn),
+            })
+            .collect();
 
         Ok(FullCharacterInfo {
             id: character.id,
@@ -1126,7 +1249,6 @@ pub async fn get_character_list(
 
 #[derive(Debug, Deserialize)]
 pub struct CharacterRequest {
-    username: String,
     character_id: i32,
 }
 
@@ -1135,5 +1257,16 @@ pub async fn get_full_character(
     session: Session,
     pool: web::Data<r2d2::Pool<r2d2::ConnectionManager<PgConnection>>>,
 ) -> actix_web::Result<impl Responder> {
-    Ok(HttpResponse::Ok())
+    let user = match request.get_verified_request(&session) {
+        Ok(u) => u,
+        Err(()) => {
+            return Ok(HttpResponse::Unauthorized().json("User authentication failed".to_string()));
+        }
+    };
+    let mut conn = pool.get().unwrap();
+
+    match FullCharacterInfo::load_character(&mut conn, user.character_id) {
+        Ok(c) => Ok(HttpResponse::Ok().json(c)),
+        Err(e) => Ok(HttpResponse::InternalServerError().json(e)),
+    }
 }

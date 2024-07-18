@@ -98,7 +98,9 @@ async fn main() -> std::io::Result<()> {
             .service(auth::test_auth)
             .service(register_user)
             .service(
-                web::resource("/data").route(web::put().to(pf2_services::create_new_character)),
+                web::resource("/data")
+                    .route(web::put().to(pf2_services::create_new_character))
+                    .route(web::get().to(pf2_services::get_full_character)),
             )
     })
     .bind(server_addr)?

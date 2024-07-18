@@ -210,16 +210,19 @@ pub struct CharacterStatus {
     pub status_description: String,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Associations)]
+#[diesel(belongs_to(SpellcastingTable))]
 #[diesel(table_name = schema::pf2_character_spells_prepared)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct SpellsPrepared {
     pub id: i32,
+    pub spellcasting_table_id: i32,
     pub spell_id: i32,
     pub level_prepared: i32,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Associations)]
+#[diesel(belongs_to(Character))]
 #[diesel(table_name = schema::pf2_character_spellcasting_tables)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct SpellcastingTable {
@@ -235,12 +238,13 @@ pub struct SpellcastingTable {
     pub misc_bonus: i32,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Associations)]
+#[diesel(belongs_to(SpellcastingTable))]
 #[diesel(table_name = schema::pf2_character_spell_known)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct SpellKnown {
     pub id: i32,
-    pub table_id: i32,
+    pub spellcasting_table_id: i32,
     pub spell_name: String,
     pub action_length: db_enums::Pf2Action,
     pub base_level: i32,
@@ -313,7 +317,8 @@ pub struct AttachedRune {
     pub rune_id: i32,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Associations)]
+#[diesel(belongs_to(Character))]
 #[diesel(table_name = schema::pf2_character_formula_books)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct FormulaBook {

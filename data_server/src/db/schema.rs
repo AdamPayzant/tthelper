@@ -224,7 +224,7 @@ diesel::table! {
 
     pf2_character_spell_known (id) {
         id -> Int4,
-        table_id -> Int4,
+        spellcasting_table_id -> Int4,
         spell_name -> Text,
         action_length -> Pf2Action,
         base_level -> Int4,
@@ -259,6 +259,7 @@ diesel::table! {
 diesel::table! {
     pf2_character_spells_prepared (id) {
         id -> Int4,
+        spellcasting_table_id -> Int4,
         spell_id -> Int4,
         level_prepared -> Int4,
     }
@@ -467,9 +468,10 @@ diesel::joinable!(pf2_character_readied_items -> pf2_character_items (item_id));
 diesel::joinable!(pf2_character_senses -> pf2_characters (character_id));
 diesel::joinable!(pf2_character_skills -> pf2_characters (character_id));
 diesel::joinable!(pf2_character_skills -> pf2_skills (skill_id));
-diesel::joinable!(pf2_character_spell_known -> pf2_character_spellcasting_tables (table_id));
+diesel::joinable!(pf2_character_spell_known -> pf2_character_spellcasting_tables (spellcasting_table_id));
 diesel::joinable!(pf2_character_spellcasting_tables -> pf2_characters (character_id));
 diesel::joinable!(pf2_character_spells_prepared -> pf2_character_spell_known (spell_id));
+diesel::joinable!(pf2_character_spells_prepared -> pf2_character_spellcasting_tables (spellcasting_table_id));
 diesel::joinable!(pf2_character_statuses -> pf2_characters (character_id));
 diesel::joinable!(pf2_character_stored_items -> pf2_character_items (item_id));
 diesel::joinable!(pf2_character_worn_items -> pf2_character_items (item_id));

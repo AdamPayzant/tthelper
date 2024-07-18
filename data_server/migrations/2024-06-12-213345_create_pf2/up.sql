@@ -316,7 +316,7 @@ CREATE TABLE IF NOT EXISTS pf2_character_spellcasting_tables (
 
 CREATE TABLE IF NOT EXISTS pf2_character_spell_known (
     id serial PRIMARY KEY,
-    table_id integer REFERENCES pf2_character_spellcasting_tables NOT NULL,
+    spellcasting_table_id integer REFERENCES pf2_character_spellcasting_tables NOT NULL,
     spell_name text NOT NULL,
     action_length pf2_action NOT NULL,
     base_level integer NOT NULL,
@@ -330,6 +330,7 @@ CREATE TABLE IF NOT EXISTS pf2_character_spell_known (
 
 CREATE TABLE IF NOT EXISTS pf2_character_spells_prepared (
     id serial PRIMARY KEY,
+    spellcasting_table_id integer REFERENCES pf2_character_spellcasting_tables(id) NOT NULL,
     spell_id integer REFERENCES pf2_character_spell_known(id) NOT NULL,
     level_prepared integer NOT NULL
 );
