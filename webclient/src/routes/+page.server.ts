@@ -7,9 +7,7 @@ export const load: PageServerLoad = (event) => {
 	if (!authorization || !authorization.authorized) {
 		console.log('User not authorized, redirecting');
 		throw redirect(302, '/login');
+	} else {
+		throw redirect(302, '/userhome');
 	}
-
-	return {
-		authorization
-	};
 };
