@@ -1211,10 +1211,8 @@ pub struct CharacterDetails {
     character_name: String,
 }
 
-#[get("/character")]
 pub async fn get_character_list(
     req: HttpRequest,
-    username: web::Json<String>,
     pool: web::Data<r2d2::Pool<r2d2::ConnectionManager<PgConnection>>>,
 ) -> actix_web::Result<impl Responder> {
     use schema::pf2_characters;
@@ -1222,7 +1220,7 @@ pub async fn get_character_list(
     if !auth::verify_header_token(req.headers()) {
         return Ok(HttpResponse::Unauthorized().json("User token not valid"));
     }
-    let user = &username.0;
+    let user = req.headers().get("user").unwrap().to_str().unwrap();
 
     let mut conn = pool.get().unwrap();
     let uid = user_mgmt::get_uid(&mut conn, user).unwrap();

@@ -99,6 +99,7 @@ async fn main() -> std::io::Result<()> {
             .service(register_user)
             .service(
                 web::resource("/character")
+                    .route(web::get().to(pf2_services::get_character_list))
                     .route(web::put().to(pf2_services::create_new_character)),
             )
             .service(pf2_services::get_full_character)
