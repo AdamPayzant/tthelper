@@ -5,79 +5,79 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TYPE pf2_ability AS ENUM (
-    'Strength',
-    'Dexterity',
-    'Constitution',
-    'Intelligence',
-    'Wisdom',
-    'Charisma'
+    'strength',
+    'dexterity',
+    'constitution',
+    'intelligence',
+    'wisdom',
+    'charisma'
 );
 
 CREATE TYPE pf2_proficiency AS ENUM (
-    'Untrained',
-    'Trained',
-    'Expert',
-    'Master',
-    'Legendary'
+    'untrained',
+    'trained',
+    'expert',
+    'master',
+    'legendary'
 );
 
 CREATE TYPE pf2_weapon_spec AS ENUM (
-    'None',
-    'WS',
-    'GWS'
+    'none',
+    'ws',
+    'gws'
 );
 
 CREATE TYPE pf2_damage_type_modifier AS ENUM (
-    'Weakness',
-    'Resistance',
-    'Immunity'
+    'weakness',
+    'resistance',
+    'immunity'
 );
 
 CREATE TYPE pf2_armor_type AS ENUM (
-    'Unarmored',
-    'Light',
-    'Medium',
-    'Heavy'
+    'unarmored',
+    'light',
+    'medium',
+    'heavy'
 );
 
 CREATE TYPE pf2_spell_tradition AS ENUM (
-    'Arcane',
-    'Divine',
-    'Elemental',
-    'Occult',
-    'Primal',
-    'Focus'
+    'arcane',
+    'divine',
+    'elemental',
+    'occult',
+    'primal',
+    'focus'
 );
 
 CREATE TYPE pf2_action AS ENUM (
-    'Free',
-    'Reaction',
-    'One',
-    'Two',
-    'Three',
-    'OneToThree',
-    'TwoToThree'
+    'free',
+    'reaction',
+    'one',
+    'two',
+    'three',
+    'one_to_three',
+    'two_to_three'
 );
 
 CREATE TYPE pf2_weapon_type AS ENUM (
-    'Melee',
-    'Ranged'
+    'melee',
+    'ranged'
 );
 
 CREATE TYPE pf2_weapon_category AS ENUM (
-    'Unarmed',
-    'Simple',
-    'Martial',
-    'Advanced'
+    'unarmed',
+    'simple',
+    'martial',
+    'advanced'
 );
 
 CREATE TYPE pf2_attack_type AS ENUM (
-    'StrStr',
-    'DexStr',
-    'DexDex',
-    'RangedDexHalfStr',
-    'RangedDexStr',
-    'Athletics'
+    'str_str',
+    'dex_str',
+    'dex_dex',
+    'ranged_dex_half_str',
+    'ranged_dex_str',
+    'athletics'
 );
 
 -- System data
@@ -190,14 +190,14 @@ CREATE TABLE IF NOT EXISTS pf2_characters (
         doom integer DEFAULT 0 NOT NULL,
 
     -- Saves
-        fort_prof pf2_proficiency DEFAULT 'Trained' NOT NULL,
+        fort_prof pf2_proficiency DEFAULT 'trained' NOT NULL,
         fort_misc_bonus integer DEFAULT 0 NOT NULL,
-        refl_prof pf2_proficiency DEFAULT 'Trained' NOT NULL,
+        refl_prof pf2_proficiency DEFAULT 'trained' NOT NULL,
         refl_misc_bonus integer DEFAULT 0 NOT NULL,
-        will_prof pf2_proficiency DEFAULT 'Trained' NOT NULL,
+        will_prof pf2_proficiency DEFAULT 'trained' NOT NULL,
         will_misc_bonus integer DEFAULT 0 NOT NULL,
 
-        perception_prof pf2_proficiency DEFAULT 'Trained' NOT NULL,
+        perception_prof pf2_proficiency DEFAULT 'trained' NOT NULL,
         perception_misc_bonus integer DEFAULT 0 NOT NULL,
 
     -- Speeds
@@ -214,16 +214,16 @@ CREATE TABLE IF NOT EXISTS pf2_characters (
 
 
     -- proficiencies
-        simple_weapon_prof pf2_proficiency DEFAULT 'Untrained' NOT NULL,
-        martial_weapon_prof pf2_proficiency DEFAULT 'Untrained' NOT NULL,
-        weapon_spec pf2_weapon_spec DEFAULT 'None' NOT NULL,
+        simple_weapon_prof pf2_proficiency DEFAULT 'untrained' NOT NULL,
+        martial_weapon_prof pf2_proficiency DEFAULT 'untrained' NOT NULL,
+        weapon_spec pf2_weapon_spec DEFAULT 'none' NOT NULL,
 
-        unarmored_prof pf2_proficiency DEFAULT 'Untrained' NOT NULL,
-        light_armor_prof pf2_proficiency DEFAULT 'Untrained' NOT NULL,
-        med_armor_prof pf2_proficiency DEFAULT 'Untrained' NOT NULL,
-        heavy_armor_prof pf2_proficiency DEFAULT 'Untrained' NOT NULL,
+        unarmored_prof pf2_proficiency DEFAULT 'untrained' NOT NULL,
+        light_armor_prof pf2_proficiency DEFAULT 'untrained' NOT NULL,
+        med_armor_prof pf2_proficiency DEFAULT 'untrained' NOT NULL,
+        heavy_armor_prof pf2_proficiency DEFAULT 'untrained' NOT NULL,
 
-        class_prof pf2_proficiency DEFAULT 'Trained' NOT NULL
+        class_prof pf2_proficiency DEFAULT 'trained' NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_background_ability_bonus (
@@ -264,7 +264,7 @@ CREATE TABLE IF NOT EXISTS pf2_character_skills (
     id serial PRIMARY KEY,
     character_id integer REFERENCES pf2_characters(id) NOT NULL,
     skill_id integer REFERENCES pf2_skills(id) NOT NULL,
-    proficiency pf2_proficiency DEFAULT 'Untrained' NOT NULL,
+    proficiency pf2_proficiency DEFAULT 'untrained' NOT NULL,
     bonuses integer DEFAULT 0 NOT NULL,
 
     assurance boolean DEFAULT false NOT NULL

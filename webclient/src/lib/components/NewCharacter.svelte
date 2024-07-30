@@ -9,7 +9,7 @@
 	<form method="post" action="?/new_character" use:enhance>
 		<div>
 			<label for="name">Character Name: </label>
-			<input type="text" name="name" id="name" required />
+			<input type="text" name="character_name" id="character_name" required />
 		</div>
 		<div>
 			<label for="alignment">Alignment: </label>
@@ -24,12 +24,12 @@
 			<input type="text" name="background" id="background" required />
 		</div>
 		<div>
-			<label for="class">Class: </label>
-			<input type="text" name="class" id="class" required />
+			<label for="character_class">Class: </label>
+			<input type="text" name="character_class" id="character_class" required />
 		</div>
 		<div>
 			<label for="key_ability">Key Ability: </label>
-			<input type="text" name="class" id="class" required />
+			<input type="text" name="key_ability" id="key_ability" required />
 		</div>
 
 		<div>
