@@ -2,7 +2,7 @@
 	import type { ActionData } from './$types';
 	import { enhance } from '$app/forms';
 
-	export let form: ActionData;
+	let form: ActionData;
 </script>
 
 <div>
