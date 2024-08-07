@@ -100,7 +100,13 @@ export interface SpellcastingTable {
 	spells_prepared: Array<PreparedSpell> | undefined;
 }
 
-export interface StoredItem {}
+export interface StoredItemItem {
+	Item: InventoryItem;
+}
+
+export interface StoredItemContainer {
+	Container: ItemContainer;
+}
 
 export interface InventoryItem {
 	id: number; // The id from pf2_character_items
@@ -259,7 +265,7 @@ export interface FullCharacterData {
 
 	casting_tables: Array<SpellcastingTable>;
 
-	stored_items: Array<StoredItem>;
+	stored_items: Array<StoredItemContainer | StoredItemItem>;
 	readied_items: Array<InventoryItem>;
 	worn_items: Array<InventoryItem>;
 

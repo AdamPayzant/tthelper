@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import type { FullCharacterData } from '$lib/pf2_services_types';
 
 	export let cid: number;
 
@@ -13,7 +14,7 @@
 		return character;
 	};
 
-	let data;
+	let data: FullCharacterData;
 	onMount(async () => {
 		data = await load_character();
 	});

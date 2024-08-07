@@ -877,7 +877,13 @@ impl FullCharacterInfo {
                 .select(models::CharacterContainers::as_select())
                 .load(conn)
             {
-                Ok(c) => c,
+                Ok(c) => {
+                    if c.len() > 0 {
+                        c
+                    } else {
+                        return Some(StoredItem::Item(item));
+                    }
+                }
                 Err(e) => {
                     if e != diesel::result::Error::NotFound {
                         warn!("DB error {} while checking container", e);

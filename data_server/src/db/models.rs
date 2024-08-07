@@ -69,7 +69,7 @@ pub struct ContainedItem {
     pub item_id: i32,
 }
 
-#[derive(Queryable, Selectable, Identifiable, Clone)]
+#[derive(Queryable, Selectable, Identifiable, Clone, Debug)]
 #[diesel(table_name = schema::pf2_items)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Item {
@@ -191,7 +191,7 @@ pub struct CharacterWornItem {
     pub invested: bool,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Debug)]
 #[diesel(table_name = schema::pf2_character_stored_items)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterStoredItem {
@@ -297,7 +297,7 @@ pub struct CharacterLanguage {
     pub title: String,
 }
 
-#[derive(Queryable, Selectable, Identifiable)]
+#[derive(Queryable, Selectable, Identifiable, Debug)]
 #[diesel(table_name = schema::pf2_character_items)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct CharacterItem {
