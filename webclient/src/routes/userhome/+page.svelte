@@ -67,6 +67,8 @@
 				<svelte:component
 					this={pages[active_page_idx].component}
 					cid={pages[active_page_idx].cid}
+					data_server={data.data_server}
+					data_server_header={data.data_server_header}
 				/>
 			{:else}
 				<svelte:component this={pages[active_page_idx].component} />

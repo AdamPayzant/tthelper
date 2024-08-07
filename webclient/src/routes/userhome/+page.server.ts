@@ -3,6 +3,8 @@ import type { Action } from '@sveltejs/kit';
 import { redirect } from '@sveltejs/kit';
 import type { NewCharacterAPI } from '$lib/pf2_services_types';
 
+import { DATA_SERVER_ADDRESS } from '$env/static/private';
+
 export const load: PageServerLoad = async (event) => {
 	const auth_token = event.cookies.get('AutherizationToken');
 	const user = event.cookies.get('Username');
@@ -11,7 +13,7 @@ export const load: PageServerLoad = async (event) => {
 		if (auth_token && user) {
 			const token = auth_token.split(' ')[1];
 
-			let res = await fetch(`http://localhost:8080/character`, {
+			let res = await fetch(`${DATA_SERVER_ADDRESS}/character`, {
 				method: 'GET',
 				headers: {
 					user: user,
@@ -27,8 +29,14 @@ export const load: PageServerLoad = async (event) => {
 			}
 
 			const list = await res.json();
-			console.log(list);
-			return { character_list: list };
+			return {
+				character_list: list,
+				data_server: DATA_SERVER_ADDRESS,
+				data_server_header: {
+					user: user,
+					access_token: token
+				}
+			};
 		}
 	} catch (e) {
 		console.error(e);
@@ -43,7 +51,7 @@ export const actions: Action = {
 
 		const form_data = Object.fromEntries(await event.request.formData());
 
-		let res = await fetch(`http://localhost:8080/character`, {
+		let res = await fetch(`${DATA_SERVER_ADDRESS}/character`, {
 			method: 'PUT',
 			headers: {
 				user: user,

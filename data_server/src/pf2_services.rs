@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use diesel::prelude::*;
 use diesel::{r2d2, PgConnection, QueryDsl, SelectableHelper};
 
-use log::{error, warn};
+use log::{debug, error, warn};
 
 use crate::auth;
 use crate::db::{db_enums, models, schema, user_mgmt};
@@ -1252,18 +1252,15 @@ pub async fn get_character_list(
 #[get("/character/{character_id}")]
 pub async fn get_full_character(
     req: HttpRequest,
+    info: web::Path<i32>,
     pool: web::Data<r2d2::Pool<r2d2::ConnectionManager<PgConnection>>>,
 ) -> actix_web::Result<impl Responder> {
     if !auth::verify_header_token(req.headers()) {
         return Ok(HttpResponse::Unauthorized().json("User token not authenticated"));
     }
     let mut conn = pool.get().unwrap();
-    let character_id: i32 = req
-        .match_info()
-        .get("character_id")
-        .unwrap()
-        .parse()
-        .unwrap();
+
+    let character_id: i32 = info.into_inner();
 
     match FullCharacterInfo::load_character(&mut conn, character_id) {
         Ok(c) => Ok(HttpResponse::Ok().json(c)),
