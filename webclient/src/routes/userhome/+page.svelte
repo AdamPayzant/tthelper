@@ -1,12 +1,19 @@
 <script lang="ts">
 	import type { ComponentType } from 'svelte';
+	import { writable, type Writable } from 'svelte/store';
 
 	import NewCharacter from '$lib/components/NewCharacter.svelte';
 	import CharacterSheet from '$lib/components/CharacterSheet.svelte';
+	import type { FullCharacterData } from '$lib/pf2_services_types';
 
 	export let data;
 
-	export let pages: { name: string; cid: number | null; component: ComponentType }[] = [];
+	export let pages: {
+		name: string;
+		cid: number | null;
+		component: ComponentType;
+		data?: Writable<FullCharacterData | undefined>;
+	}[] = [];
 	export let active_page_idx = 0;
 	// I don't like using this, but checking the len of pages doesn't update after first add
 	export let display_component: boolean = false;
@@ -23,7 +30,8 @@
 				pages.push({
 					name: name,
 					cid: id,
-					component: CharacterSheet
+					component: CharacterSheet,
+					data: writable(undefined)
 				}) - 1;
 		}
 		display_component = true;
@@ -61,14 +69,13 @@
 			{/await}
 		</ul>
 	</div>
-	<div class="pt-10 pl-4">
+	<div class="pt-10 pl-4 w-full h-screen">
 		{#if display_component}
 			{#if pages[active_page_idx].cid !== null}
 				<svelte:component
 					this={pages[active_page_idx].component}
 					cid={pages[active_page_idx].cid}
-					data_server={data.data_server}
-					data_server_header={data.data_server_header}
+					data={pages[active_page_idx].data}
 				/>
 			{:else}
 				<svelte:component this={pages[active_page_idx].component} />

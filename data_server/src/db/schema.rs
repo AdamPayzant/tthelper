@@ -43,6 +43,13 @@ pub mod sql_types {
 }
 
 diesel::table! {
+    initialization_log (id) {
+        id -> Int4,
+        initialized_at -> Nullable<Timestamp>,
+    }
+}
+
+diesel::table! {
     use diesel::sql_types::*;
     use super::sql_types::Pf2ArmorType;
 
@@ -215,6 +222,7 @@ diesel::table! {
         proficiency -> Pf2Proficiency,
         bonuses -> Int4,
         assurance -> Bool,
+        extra_name -> Nullable<Text>,
     }
 }
 
@@ -305,12 +313,19 @@ diesel::table! {
         character_class -> Text,
         key_ability -> Text,
         lvl -> Int4,
+        exp -> Int4,
         hero_points -> Int4,
+        str_base -> Int4,
         str_bonus -> Int4,
+        dex_base -> Int4,
         dex_bonus -> Int4,
+        con_base -> Int4,
         con_bonus -> Int4,
+        int_base -> Int4,
         int_bonus -> Int4,
+        wis_base -> Int4,
         wis_bonus -> Int4,
+        cha_base -> Int4,
         cha_bonus -> Int4,
         active_apex_item -> Nullable<Text>,
         active_apex_item_bonus -> Nullable<Pf2Ability>,
@@ -351,6 +366,13 @@ diesel::table! {
         character_id -> Int4,
         title -> Text,
         description -> Text,
+    }
+}
+
+diesel::table! {
+    pf2_initialization_log (id) {
+        id -> Int4,
+        initialized_at -> Nullable<Timestamp>,
     }
 }
 
@@ -486,6 +508,7 @@ diesel::joinable!(pf2_weapon -> pf2_items (item_id));
 diesel::joinable!(pf2_weapon -> pf2_weapon_group (group_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
+    initialization_log,
     pf2_armor,
     pf2_armor_group,
     pf2_character_ancestry_ability_modifier,
@@ -511,6 +534,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     pf2_character_worn_items,
     pf2_characters,
     pf2_class_features,
+    pf2_initialization_log,
     pf2_item_traits,
     pf2_items,
     pf2_items_in_containers,

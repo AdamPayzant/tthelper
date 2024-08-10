@@ -7,20 +7,92 @@ export interface NewCharacterAPI {
 	key_ability: string;
 }
 
-enum Pf2Ability {}
-enum Pf2Proficiency {}
-enum Pf2WeaponSpec {}
-enum Pf2DamageTypeModifier {}
-enum Pf2SpellTradition {}
-enum Pf2Action {}
-enum Pf2ArmorType {}
-enum Pf2WeaponType {}
-enum Pf2WeaponCategory {}
-enum Pf2AttackType {}
+// =========================================== //
+//            Full Character data              //
+// =========================================== //
 
+// Defining enums
+// For now these are unused
+enum Pf2Ability {
+	Strength,
+	Dexterity,
+	Constitution,
+	Intelligence,
+	Wisdom,
+	Charisma
+}
+
+enum Pf2Proficiency {
+	Untrained,
+	Trained,
+	Expert,
+	Master,
+	Legendary
+}
+
+enum Pf2WeaponSpec {
+	None,
+	WS,
+	GWS
+}
+
+enum Pf2DamageTypeModifier {
+	Weakness,
+	Resistance,
+	Immunity
+}
+
+enum Pf2SpellTradition {
+	Arcane,
+	Divine,
+	Elemental,
+	Occult,
+	Primal,
+	Focus
+}
+
+enum Pf2Action {
+	Free,
+	Reaction,
+	One,
+	Two,
+	Three,
+	OneToThree,
+	TwoToThree
+}
+
+enum Pf2ArmorType {
+	Unarmored,
+	Light,
+	Medium,
+	Heavy
+}
+
+enum Pf2WeaponType {
+	Melee,
+	Ranged
+}
+
+enum Pf2WeaponCategory {
+	Unarmed,
+	Simple,
+	Martial,
+	Advanced
+}
+
+enum Pf2AttackType {
+	StrStr,
+	DexStr,
+	DexDex,
+	RangedDexHalfStr,
+	RangedDexStr,
+	Athletics
+}
+
+// Actual structs
 export interface AbilityModifier {
 	id: number;
-	ability: Pf2Ability;
+	ability: string;
 	is_positive_boost: boolean;
 }
 
@@ -38,7 +110,7 @@ export interface ClassFeature {
 
 export interface DamageRecievedModifier {
 	id: number;
-	modifier_type: Pf2DamageTypeModifier;
+	modifier_type: string;
 	value: number | undefined;
 }
 
@@ -51,9 +123,9 @@ export interface Sense {
 export interface Skill {
 	id: number;
 	skill: string;
-	ability: Pf2Ability;
+	ability: string;
 
-	proficiency: Pf2Proficiency;
+	proficiency: string;
 	bonuses: number;
 	assurance: boolean;
 }
@@ -70,7 +142,7 @@ export interface Spell {
 	description: string;
 	heightening: string | undefined;
 
-	action_length: Pf2Action;
+	action_length: string;
 	base_level: number;
 	duration: string | undefined;
 	spell_range: string | undefined;
@@ -85,9 +157,9 @@ export interface PreparedSpell {
 
 export interface SpellcastingTable {
 	id: number;
-	tradition: Pf2SpellTradition;
-	ability: Pf2Ability;
-	prof: Pf2Proficiency;
+	tradition: string;
+	ability: string;
+	prof: string;
 	spontaneous: boolean;
 
 	casts_per_day: Array<number | undefined>;
@@ -138,7 +210,7 @@ export interface Armor {
 	check_penalty: number;
 	speed_penalty: number;
 	str_requirement: number;
-	armor_type: Pf2ArmorType;
+	armor_type: string;
 	armor_group_name: string;
 	armor_spec: string;
 }
@@ -155,8 +227,8 @@ export interface Shield {
 export interface Weapon {
 	id: number;
 	item_details: InventoryItem;
-	weapon_type: Pf2WeaponType;
-	weapon_cat: Pf2WeaponCategory;
+	weapon_type: string;
+	weapon_cat: string;
 	group_name: string;
 	crit_spec: string;
 	damage_die: number;
@@ -167,10 +239,10 @@ export interface Weapon {
 export interface Attack {
 	id: number;
 	weapon: Weapon | undefined;
-	prof: Pf2Proficiency;
+	prof: string;
 	matk: number;
 	mdmg: number;
-	attack_type: Pf2AttackType;
+	attack_type: string;
 	damage_die: number | undefined;
 }
 
@@ -203,17 +275,24 @@ export interface FullCharacterData {
 	class: string;
 	key_ability: string;
 	lvl: number;
+	exp: number;
 	hero_points: number;
 
+	str_base: number;
 	str_bonus: number;
+	dex_base: number;
 	dex_bonus: number;
+	con_base: number;
 	con_bonus: number;
+	int_base: number;
 	int_bonus: number;
+	wis_base: number;
 	wis_bonus: number;
+	cha_base: number;
 	cha_bonus: number;
 
 	active_apex_item: string | undefined;
-	active_apex_item_bonus: Pf2Ability | undefined;
+	active_apex_item_bonus: string | undefined;
 
 	temp_hp: number;
 	damage: number;
@@ -221,13 +300,13 @@ export interface FullCharacterData {
 	wound: number;
 	doom: number;
 
-	fort_prof: Pf2Proficiency;
+	fort_prof: string;
 	fort_misc_bonus: number;
-	refl_prof: Pf2Proficiency;
+	refl_prof: string;
 	refl_misc_bonus: number;
-	will_prof: Pf2Proficiency;
+	will_prof: string;
 	will_misc_bonus: number;
-	perception_prof: Pf2Proficiency;
+	perception_prof: string;
 	perception_misc_bonus: number;
 
 	base_land_speed: number | undefined;
@@ -239,16 +318,16 @@ export interface FullCharacterData {
 	max_focus_points: number | undefined;
 	current_focus_points: number | undefined;
 
-	simple_weapon_prof: Pf2Proficiency;
-	martial_weapon_prof: Pf2Proficiency;
-	weapon_spec: Pf2WeaponSpec;
+	simple_weapon_prof: string;
+	martial_weapon_prof: string;
+	weapon_spec: string;
 
-	unarmored_prof: Pf2Proficiency;
-	light_armor_prof: Pf2Proficiency;
-	med_armor_prof: Pf2Proficiency;
-	heavy_armor_prof: Pf2Proficiency;
+	unarmored_prof: string;
+	light_armor_prof: string;
+	med_armor_prof: string;
+	heavy_armor_prof: string;
 
-	class_prof: Pf2Proficiency;
+	class_prof: string;
 
 	background_ability_boosts: Array<AbilityModifier>;
 	ancestry_ability_boosts: Array<AbilityModifier>;

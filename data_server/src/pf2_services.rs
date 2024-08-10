@@ -47,6 +47,7 @@ struct Skill {
     proficiency: db_enums::Pf2Proficiency,
     bonuses: i32,
     assurance: bool,
+    extra_name: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -511,13 +512,20 @@ struct FullCharacterInfo {
     class: String,
     key_ability: String,
     lvl: i32,
+    exp: i32,
     hero_points: i32,
 
+    str_base: i32,
     str_bonus: i32,
+    dex_base: i32,
     dex_bonus: i32,
+    con_base: i32,
     con_bonus: i32,
+    int_base: i32,
     int_bonus: i32,
+    wis_base: i32,
     wis_bonus: i32,
+    cha_base: i32,
     cha_bonus: i32,
 
     active_apex_item: Option<String>,
@@ -766,6 +774,7 @@ impl FullCharacterInfo {
             proficiency: character_details.proficiency,
             bonuses: character_details.bonuses,
             assurance: character_details.assurance,
+            extra_name: character_details.extra_name,
         })
         .collect();
 
@@ -1053,6 +1062,7 @@ impl FullCharacterInfo {
             class: character.character_class.clone(),
             key_ability: character.key_ability.clone(),
             lvl: character.lvl,
+            exp: character.exp,
             hero_points: character.hero_points,
 
             str_bonus: character.str_bonus,

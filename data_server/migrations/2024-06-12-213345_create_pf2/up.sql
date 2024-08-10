@@ -159,7 +159,7 @@ CREATE TABLE IF NOT EXISTS pf2_shield (
 
 CREATE TABLE IF NOT EXISTS pf2_characters (
     id serial PRIMARY KEY,
-    owner integer REFERENCES users(id) NOT NULL,
+    owner integer REFERENCES users(id) ON DELETE CASCADE NOT NULL,
 
     character_name text NOT NULL,
     alignment text NOT NULL,
@@ -168,15 +168,22 @@ CREATE TABLE IF NOT EXISTS pf2_characters (
     character_class text NOT NULL,
     key_ability text NOT NULL,
     lvl integer DEFAULT 1 NOT NULL,
+    exp integer DEFAULT 0 NOT NULL,
 
     hero_points integer DEFAULT 1 NOT NULL,
 
     -- Abilities
+        str_base integer DEFAULT 10 NOT NULL,
         str_bonus integer DEFAULT 0 NOT NULL,
+        dex_base integer DEFAULT 10 NOT NULL,
         dex_bonus integer DEFAULT 0 NOT NULL,
+        con_base integer DEFAULT 10 NOT NULL,
         con_bonus integer DEFAULT 0 NOT NULL,
+        int_base integer DEFAULT 10 NOT NULL,
         int_bonus integer DEFAULT 0 NOT NULL,
+        wis_base integer DEFAULT 10 NOT NULL,
         wis_bonus integer DEFAULT 0 NOT NULL,
+        cha_base integer DEFAULT 10 NOT NULL,
         cha_bonus integer DEFAULT 0 NOT NULL,
 
         active_apex_item text,
@@ -228,71 +235,72 @@ CREATE TABLE IF NOT EXISTS pf2_characters (
 
 CREATE TABLE IF NOT EXISTS pf2_character_background_ability_bonus (
     id serial PRIMARY KEY,
-    character_id integer REFERENCES pf2_characters(id) NOT NULL,
+    character_id integer REFERENCES pf2_characters(id) ON DELETE CASCADE NOT NULL,
     ability pf2_ability NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_ancestry_ability_modifier (
     id serial PRIMARY KEY,
-    character_id integer REFERENCES pf2_characters(id) NOT NULL,
+    character_id integer REFERENCES pf2_characters(id) ON DELETE CASCADE NOT NULL,
     ability pf2_ability NOT NULL,
     positive_boost boolean DEFAULT true NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_ancestry_features (
     id serial PRIMARY KEY,
-    character_id integer REFERENCES pf2_characters(id) NOT NULL,
+    character_id integer REFERENCES pf2_characters(id) ON DELETE CASCADE NOT NULL,
     title text NOT NULL,
     description text DEFAULT '' NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_damage_type_modifier (
     id serial PRIMARY KEY,
-    character_id integer REFERENCES pf2_characters(id) NOT NULL,
+    character_id integer REFERENCES pf2_characters(id) ON DELETE CASCADE NOT NULL,
     modifier  pf2_damage_type_modifier NOT NULL,
     val integer -- NULL if immunity
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_senses (
     id serial PRIMARY KEY,
-    character_id integer REFERENCES pf2_characters(id) NOT NULL,
+    character_id integer REFERENCES pf2_characters(id) ON DELETE CASCADE NOT NULL,
     sense_name text NOT NULL,
     sense_description text DEFAULT '' NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_skills (
     id serial PRIMARY KEY,
-    character_id integer REFERENCES pf2_characters(id) NOT NULL,
+    character_id integer REFERENCES pf2_characters(id) ON DELETE CASCADE NOT NULL,
     skill_id integer REFERENCES pf2_skills(id) NOT NULL,
     proficiency pf2_proficiency DEFAULT 'untrained' NOT NULL,
     bonuses integer DEFAULT 0 NOT NULL,
 
-    assurance boolean DEFAULT false NOT NULL
+    assurance boolean DEFAULT false NOT NULL,
+    extra_name text -- For lores
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_languages (
     id serial PRIMARY KEY,
-    character_id integer REFERENCES pf2_characters(id) NOT NULL,
+    character_id integer REFERENCES pf2_characters(id) ON DELETE CASCADE NOT NULL,
     title text NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_class_features (
     id serial PRIMARY KEY,
-    character_id integer REFERENCES pf2_characters(id) NOT NULL,
+    character_id integer REFERENCES pf2_characters(id) ON DELETE CASCADE NOT NULL,
     title text NOT NULL,
     description text DEFAULT '' NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_feats (
     id serial PRIMARY KEY,
-    character_id integer REFERENCES pf2_characters(id) NOT NULL,
+    character_id integer REFERENCES pf2_characters(id) ON DELETE CASCADE NOT NULL,
     title text NOT NULL,
     description text DEFAULT '' NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_armor_traits (
     id serial PRIMARY KEY,
-    character_id integer REFERENCES pf2_characters(id) NOT  NULL,
+    character_id integer REFERENCES pf2_characters(id) ON DELETE CASCADE NOT  NULL,
     trait_name text NOT NULL,
     description text DEFAULT '' NOT NULL
 );
@@ -301,7 +309,7 @@ CREATE TABLE IF NOT EXISTS pf2_character_spellcasting_tables (
     -- Does not include rituals, those are their own thing
 
     id serial PRIMARY KEY,
-    character_id integer REFERENCES pf2_characters(id) NOT NULL,
+    character_id integer REFERENCES pf2_characters(id) ON DELETE CASCADE NOT NULL,
     tradition pf2_spell_tradition NOT NULL,
     ability pf2_ability NOT NULL,
     proficiency pf2_proficiency NOT NULL,
@@ -316,7 +324,7 @@ CREATE TABLE IF NOT EXISTS pf2_character_spellcasting_tables (
 
 CREATE TABLE IF NOT EXISTS pf2_character_spell_known (
     id serial PRIMARY KEY,
-    spellcasting_table_id integer REFERENCES pf2_character_spellcasting_tables NOT NULL,
+    spellcasting_table_id integer REFERENCES pf2_character_spellcasting_tables ON DELETE CASCADE NOT NULL,
     spell_name text NOT NULL,
     action_length pf2_action NOT NULL,
     base_level integer NOT NULL,
@@ -330,21 +338,21 @@ CREATE TABLE IF NOT EXISTS pf2_character_spell_known (
 
 CREATE TABLE IF NOT EXISTS pf2_character_spells_prepared (
     id serial PRIMARY KEY,
-    spellcasting_table_id integer REFERENCES pf2_character_spellcasting_tables(id) NOT NULL,
-    spell_id integer REFERENCES pf2_character_spell_known(id) NOT NULL,
+    spellcasting_table_id integer REFERENCES pf2_character_spellcasting_tables(id) ON DELETE CASCADE NOT NULL,
+    spell_id integer REFERENCES pf2_character_spell_known(id) ON DELETE CASCADE NOT NULL,
     level_prepared integer NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_statuses (
     id serial PRIMARY KEY,
-    character_id integer REFERENCES pf2_characters(id) NOT  NULL,
+    character_id integer REFERENCES pf2_characters(id) ON DELETE CASCADE NOT  NULL,
     status_name text NOT NULL,
     status_description text DEFAULT '' NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_formula_books (
     id serial PRIMARY KEY,
-    character_id integer REFERENCES pf2_characters(id) NOT NULL,
+    character_id integer REFERENCES pf2_characters(id) ON DELETE CASCADE NOT NULL,
     item_id integer REFERENCES pf2_items(id) NOT NULL
 );
 
@@ -352,19 +360,19 @@ CREATE TABLE IF NOT EXISTS pf2_character_formula_books (
 
 CREATE TABLE IF NOT EXISTS pf2_character_items (
     id serial PRIMARY KEY,
-    character_id integer REFERENCES pf2_characters(id) NOT NULL,
+    character_id integer REFERENCES pf2_characters(id) ON DELETE CASCADE NOT NULL,
     item_id integer REFERENCES pf2_items(id) NOT NULL,
     quantity integer NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_stored_items (
     id serial PRIMARY KEY NOT NULL,
-    item_id integer REFERENCES pf2_character_items(id) NOT NULL
+    item_id integer REFERENCES pf2_character_items(id) ON DELETE CASCADE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_containers (
     id serial PRIMARY KEY,
-    item_id integer REFERENCES pf2_character_items(id) NOT NULL,
+    item_id integer REFERENCES pf2_character_items(id) ON DELETE CASCADE NOT NULL,
     bulk_reduction integer NOT NULL,
     max_bulk integer  NOT NULL
 );
@@ -372,30 +380,30 @@ CREATE TABLE IF NOT EXISTS pf2_character_containers (
 CREATE TABLE IF NOT EXISTS pf2_items_in_containers (
     id serial PRIMARY KEY,
     character_containers_id integer REFERENCES pf2_character_containers(id)  NOT NULL,
-    item_id integer REFERENCES pf2_character_items(id)  NOT NULL
+    item_id integer REFERENCES pf2_character_items(id) ON DELETE CASCADE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_readied_items (
     id serial PRIMARY KEY,
-    item_id integer REFERENCES pf2_character_items(id) NOT NULL
+    item_id integer REFERENCES pf2_character_items(id) ON DELETE CASCADE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_worn_items (
     id serial PRIMARY KEY,
-    item_id integer REFERENCES pf2_character_items(id) NOT NULL,
+    item_id integer REFERENCES pf2_character_items(id) ON DELETE CASCADE NOT NULL,
     invested boolean DEFAULT false NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_item_attached_runes (
     id serial PRIMARY KEY,
-    character_item_id integer REFERENCES pf2_character_items(id) NOT NULL,
+    character_item_id integer REFERENCES pf2_character_items(id) ON DELETE CASCADE NOT NULL,
     rune_id integer REFERENCES pf2_items(id) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS pf2_character_attacks (
     id serial PRIMARY KEY,
-    character_id integer REFERENCES pf2_characters(id) NOT NULL,
-    item_id integer REFERENCES pf2_character_items(id), -- Optional
+    character_id integer REFERENCES pf2_characters(id) ON DELETE CASCADE NOT NULL,
+    item_id integer REFERENCES pf2_character_items(id) ON DELETE CASCADE, -- Optional
 
     proficiency pf2_proficiency NOT NULL,
     matk integer DEFAULT 0 NOT NULL,
@@ -404,3 +412,70 @@ CREATE TABLE IF NOT EXISTS pf2_character_attacks (
 
     damage_die integer DEFAULT null -- Only used to override
 );
+
+-- Functions
+
+CREATE OR REPLACE FUNCTION init_pf2_data()
+    RETURNS void LANGUAGE plpgsql
+    AS $func$
+    BEGIN
+        PERFORM 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'pf2_initialization_log';
+
+        IF NOT FOUND THEN
+            -- Create a log table to track initialization
+            CREATE TABLE pf2_initialization_log (
+                id serial PRIMARY KEY,
+                initialized_at TIMESTAMP DEFAULT current_timestamp
+            );
+
+            INSERT INTO pf2_skills (title, ability) VALUES
+                ('Acrobatics', 'dexterity'),
+                ('Arcana', 'intelligence'),
+                ('Athletics', 'strength'),
+                ('Crafting', 'intelligence'),
+                ('Deception', 'charisma'),
+                ('Diplomacy', 'charisma'),
+                ('Intimidation', 'charisma'),
+                ('Medicine', 'wisdom'),
+                ('Nature', 'wisdom'),
+                ('Occultism', 'intelligence'),
+                ('Performance', 'charisma'),
+                ('Religion', 'wisdom'),
+                ('Society', 'intelligence'),
+                ('Stealth', 'dexterity'),
+                ('Survival', 'wisdom'),
+                ('Thievery', 'dexterity'),
+                ('Lore', 'intelligence');
+
+            -- Log the initialization
+            INSERT INTO pf2_initialization_log (initialized_at) VALUES (current_timestamp);
+
+            RAISE NOTICE 'PF2 database initialization completed successfully.';
+        ELSE
+            RAISE NOTICE 'PF2 database has already been initialized.';
+        END IF;
+    END;
+    $func$;
+
+CREATE OR REPLACE FUNCTION add_new_pf2_character_defaults()
+    RETURNS TRIGGER AS $$
+    BEGIN
+
+        INSERT INTO pf2_character_skills (character_id, skill_id)
+            SELECT NEW.id, s.id FROM pf2_skills s;
+
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+
+-- Set up triggers and run init
+
+CREATE TRIGGER new_character AFTER INSERT ON pf2_characters
+    FOR EACH ROW
+    EXECUTE FUNCTION add_new_pf2_character_defaults();
+
+SELECT "init_pf2_data"();
+
+
+-- Test character command
+-- INSERT INTO pf2_characters (character_name, owner, alignment, ancestry, background, character_class, key_ability) VALUES ('Grog', 1, 't' , 't', 't', 't', 't');

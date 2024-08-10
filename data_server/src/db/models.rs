@@ -116,13 +116,20 @@ pub struct Character {
     pub character_class: String,
     pub key_ability: String,
     pub lvl: i32,
+    pub exp: i32,
     pub hero_points: i32,
 
+    pub str_base: i32,
     pub str_bonus: i32,
+    pub dex_base: i32,
     pub dex_bonus: i32,
+    pub con_base: i32,
     pub con_bonus: i32,
+    pub int_base: i32,
     pub int_bonus: i32,
+    pub wis_base: i32,
     pub wis_bonus: i32,
+    pub cha_base: i32,
     pub cha_bonus: i32,
     pub active_apex_item: Option<String>,
     pub active_apex_item_bonus: Option<db_enums::Pf2Ability>,
@@ -266,6 +273,7 @@ pub struct CharacterSkill {
     pub proficiency: db_enums::Pf2Proficiency,
     pub bonuses: i32,
     pub assurance: bool,
+    pub extra_name: Option<String>,
 }
 
 #[derive(Queryable, Selectable, Identifiable, Associations)]
