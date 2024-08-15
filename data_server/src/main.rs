@@ -15,7 +15,8 @@ use db::dbms;
 
 // Services
 mod auth;
-mod pf2_services;
+mod pf2;
+use pf2::pf2_services;
 
 use log::{Level, Metadata, Record};
 
@@ -103,6 +104,8 @@ async fn main() -> std::io::Result<()> {
                     .route(web::put().to(pf2_services::create_new_character)),
             )
             .service(pf2_services::get_full_character)
+            .service(pf2_services::update_character_ability)
+            .service(pf2_services::update_character_skill)
     })
     .bind(server_addr)?
     .run()

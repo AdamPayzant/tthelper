@@ -196,6 +196,8 @@ CREATE TABLE IF NOT EXISTS pf2_characters (
         wound integer DEFAULT 0 NOT NULL,
         doom integer DEFAULT 0 NOT NULL,
 
+        misc_armor_bonus integer DEFAULT 0 NOT NULL,
+
     -- Saves
         fort_prof pf2_proficiency DEFAULT 'trained' NOT NULL,
         fort_misc_bonus integer DEFAULT 0 NOT NULL,

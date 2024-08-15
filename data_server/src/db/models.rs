@@ -140,6 +140,8 @@ pub struct Character {
     pub wound: i32,
     pub doom: i32,
 
+    pub misc_armor_bonus: i32,
+
     pub fort_prof: db_enums::Pf2Proficiency,
     pub fort_misc_bonus: i32,
     pub refl_prof: db_enums::Pf2Proficiency,
@@ -274,6 +276,15 @@ pub struct CharacterSkill {
     pub bonuses: i32,
     pub assurance: bool,
     pub extra_name: Option<String>,
+}
+
+#[derive(AsChangeset)]
+#[diesel(table_name = schema::pf2_character_skills)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct CharacterSkillUpdate {
+    pub proficiency: db_enums::Pf2Proficiency,
+    pub bonuses: i32,
+    pub assurance: bool,
 }
 
 #[derive(Queryable, Selectable, Identifiable, Associations)]

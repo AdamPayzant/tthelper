@@ -1,3 +1,7 @@
+// =========================================== //
+//                API Structures               //
+// =========================================== //
+
 export interface NewCharacterAPI {
 	character_name: string;
 	alignment: string;
@@ -7,13 +11,20 @@ export interface NewCharacterAPI {
 	key_ability: string;
 }
 
+export interface AbilityUpdate {
+	character_id: number;
+	ability: string;
+	base: number;
+	bonus: number;
+}
+
 // =========================================== //
 //            Full Character data              //
 // =========================================== //
 
 // Defining enums
 // For now these are unused
-enum Pf2Ability {
+export enum Pf2Ability {
 	Strength,
 	Dexterity,
 	Constitution,
@@ -22,7 +33,7 @@ enum Pf2Ability {
 	Charisma
 }
 
-enum Pf2Proficiency {
+export enum Pf2Proficiency {
 	Untrained,
 	Trained,
 	Expert,
@@ -30,19 +41,19 @@ enum Pf2Proficiency {
 	Legendary
 }
 
-enum Pf2WeaponSpec {
+export enum Pf2WeaponSpec {
 	None,
 	WS,
 	GWS
 }
 
-enum Pf2DamageTypeModifier {
+export enum Pf2DamageTypeModifier {
 	Weakness,
 	Resistance,
 	Immunity
 }
 
-enum Pf2SpellTradition {
+export enum Pf2SpellTradition {
 	Arcane,
 	Divine,
 	Elemental,
@@ -51,7 +62,7 @@ enum Pf2SpellTradition {
 	Focus
 }
 
-enum Pf2Action {
+export enum Pf2Action {
 	Free,
 	Reaction,
 	One,
@@ -61,26 +72,26 @@ enum Pf2Action {
 	TwoToThree
 }
 
-enum Pf2ArmorType {
+export enum Pf2ArmorType {
 	Unarmored,
 	Light,
 	Medium,
 	Heavy
 }
 
-enum Pf2WeaponType {
+export enum Pf2WeaponType {
 	Melee,
 	Ranged
 }
 
-enum Pf2WeaponCategory {
+export enum Pf2WeaponCategory {
 	Unarmed,
 	Simple,
 	Martial,
 	Advanced
 }
 
-enum Pf2AttackType {
+export enum Pf2AttackType {
 	StrStr,
 	DexStr,
 	DexDex,
@@ -128,6 +139,7 @@ export interface Skill {
 	proficiency: string;
 	bonuses: number;
 	assurance: boolean;
+	extra_name: string | null;
 }
 
 export interface Feat {
@@ -299,6 +311,8 @@ export interface FullCharacterData {
 	dying: number;
 	wound: number;
 	doom: number;
+
+	misc_armor_bonus: number;
 
 	fort_prof: string;
 	fort_misc_bonus: number;

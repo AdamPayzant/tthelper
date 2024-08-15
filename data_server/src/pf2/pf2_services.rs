@@ -1,5 +1,5 @@
 use actix_session::Session;
-use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, put, web, HttpRequest, HttpResponse, Responder};
 
 use serde::{Deserialize, Serialize};
 
@@ -10,6 +10,12 @@ use log::{debug, error, warn};
 
 use crate::auth;
 use crate::db::{db_enums, models, schema, user_mgmt};
+
+use crate::pf2::utils;
+
+// ===============================================
+//          Full Character API Structs
+// ===============================================
 
 #[derive(Debug, Serialize, Deserialize)]
 struct AbilityModifier {
@@ -48,6 +54,16 @@ struct Skill {
     bonuses: i32,
     assurance: bool,
     extra_name: Option<String>,
+}
+
+impl Skill {
+    pub fn to_db_model_update(self) -> models::CharacterSkillUpdate {
+        models::CharacterSkillUpdate {
+            proficiency: self.proficiency,
+            bonuses: self.bonuses,
+            assurance: self.assurance,
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -537,6 +553,8 @@ struct FullCharacterInfo {
     wound: i32,
     doom: i32,
 
+    misc_armor_bonus: i32,
+
     fort_prof: db_enums::Pf2Proficiency,
     fort_misc_bonus: i32,
     refl_prof: db_enums::Pf2Proficiency,
@@ -756,6 +774,7 @@ impl FullCharacterInfo {
                 models::CharacterSkill::as_select(),
                 models::Skill::as_select(),
             ))
+            .order(schema::pf2_character_skills::dsl::id.asc())
             .load(conn)
         {
             Ok(f) => f,
@@ -1065,11 +1084,17 @@ impl FullCharacterInfo {
             exp: character.exp,
             hero_points: character.hero_points,
 
+            str_base: character.str_base,
             str_bonus: character.str_bonus,
+            dex_base: character.dex_base,
             dex_bonus: character.dex_bonus,
+            con_base: character.con_base,
             con_bonus: character.con_bonus,
+            int_base: character.int_base,
             int_bonus: character.int_bonus,
+            wis_base: character.wis_base,
             wis_bonus: character.wis_bonus,
+            cha_base: character.cha_base,
             cha_bonus: character.cha_bonus,
 
             active_apex_item: character.active_apex_item.clone(),
@@ -1080,6 +1105,8 @@ impl FullCharacterInfo {
             dying: character.dying,
             wound: character.wound,
             doom: character.doom,
+
+            misc_armor_bonus: character.misc_armor_bonus,
 
             fort_prof: character.fort_prof,
             fort_misc_bonus: character.fort_misc_bonus,
@@ -1151,6 +1178,10 @@ pub struct NewCharacterAPI {
     character_class: String,
     key_ability: String,
 }
+
+// ===============================================
+//                      Services
+// ===============================================
 
 pub async fn create_new_character(
     req: HttpRequest,
@@ -1281,5 +1312,127 @@ pub async fn get_full_character(
     match FullCharacterInfo::load_character(&mut conn, character_id) {
         Ok(c) => Ok(HttpResponse::Ok().json(c)),
         Err(e) => Ok(HttpResponse::InternalServerError().json(e)),
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AbilityUpdate {
+    character_id: i32,
+    ability: db_enums::Pf2Ability,
+    base: i32,
+    bonus: i32,
+}
+
+#[put("/character/{character_id}/abilities")]
+pub async fn update_character_ability(
+    req: HttpRequest,
+    info: web::Path<i32>,
+    json: web::Json<AbilityUpdate>,
+    pool: web::Data<r2d2::Pool<r2d2::ConnectionManager<PgConnection>>>,
+) -> actix_web::Result<impl Responder> {
+    use db_enums::Pf2Ability::*;
+    use schema::pf2_characters;
+
+    if !auth::verify_header_token(req.headers()) {
+        return Ok(HttpResponse::Unauthorized().json("User token not authenticated"));
+    }
+    let user = req
+        .headers()
+        .get("user")
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let mut conn = pool.get().unwrap();
+    let data = json.0;
+    let cid = info.into_inner();
+
+    if !utils::verify_user_owns_character(user, cid, &mut conn) {
+        return Ok(HttpResponse::Unauthorized().json("Authenticated user does not own character"));
+    }
+
+    let partial =
+        diesel::update(pf2_characters::dsl::pf2_characters).filter(pf2_characters::dsl::id.eq(cid));
+
+    match match data.ability {
+        Strength => partial
+            .set((
+                pf2_characters::dsl::str_base.eq(data.base),
+                pf2_characters::dsl::str_bonus.eq(data.bonus),
+            ))
+            .execute(&mut conn),
+        Dexterity => partial
+            .set((
+                pf2_characters::dsl::dex_base.eq(data.base),
+                pf2_characters::dsl::dex_bonus.eq(data.bonus),
+            ))
+            .execute(&mut conn),
+        Constitution => partial
+            .set((
+                pf2_characters::dsl::con_base.eq(data.base),
+                pf2_characters::dsl::con_bonus.eq(data.bonus),
+            ))
+            .execute(&mut conn),
+        Intelligence => partial
+            .set((
+                pf2_characters::dsl::int_base.eq(data.base),
+                pf2_characters::dsl::int_bonus.eq(data.bonus),
+            ))
+            .execute(&mut conn),
+        Wisdom => partial
+            .set((
+                pf2_characters::dsl::wis_base.eq(data.base),
+                pf2_characters::dsl::wis_bonus.eq(data.bonus),
+            ))
+            .execute(&mut conn),
+        Charisma => partial
+            .set((
+                pf2_characters::dsl::cha_base.eq(data.base),
+                pf2_characters::dsl::cha_bonus.eq(data.bonus),
+            ))
+            .execute(&mut conn),
+    } {
+        Ok(_) => Ok(HttpResponse::Ok().json("Status update")),
+        Err(_) => Ok(HttpResponse::InternalServerError().json("Unknown Error Occured")),
+    }
+}
+
+#[put("/character/{character_id}/skills")]
+pub async fn update_character_skill(
+    req: HttpRequest,
+    info: web::Path<i32>,
+    json: web::Json<Skill>,
+    pool: web::Data<r2d2::Pool<r2d2::ConnectionManager<PgConnection>>>,
+) -> actix_web::Result<impl Responder> {
+    use schema::pf2_character_skills;
+
+    if !auth::verify_header_token(req.headers()) {
+        return Ok(HttpResponse::Unauthorized().json("User token not authenticated"));
+    }
+    let user = req
+        .headers()
+        .get("user")
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let mut conn = pool.get().unwrap();
+    let data = json.0;
+    let cid = info.into_inner();
+
+    if !utils::verify_user_owns_character(user, cid, &mut conn) {
+        return Ok(HttpResponse::Unauthorized().json("Authenticated user does not own character"));
+    }
+
+    match diesel::update(pf2_character_skills::dsl::pf2_character_skills)
+        .filter(pf2_character_skills::dsl::id.eq(data.id))
+        .filter(pf2_character_skills::dsl::character_id.eq(cid))
+        .set(data.to_db_model_update())
+        .execute(&mut conn)
+    {
+        Ok(_) => Ok(HttpResponse::Ok().json("Skill successfully updated")),
+        Err(_) => Ok(HttpResponse::InternalServerError().json("Unexepceted Error")),
     }
 }

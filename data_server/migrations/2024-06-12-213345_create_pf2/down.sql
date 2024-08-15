@@ -1,3 +1,4 @@
+DROP TABLE pf2_initialization_log;
 DROP TABLE pf2_character_attacks;
 DROP TABLE pf2_character_item_attached_runes;
 DROP TABLE pf2_character_worn_items;

@@ -43,13 +43,6 @@ pub mod sql_types {
 }
 
 diesel::table! {
-    initialization_log (id) {
-        id -> Int4,
-        initialized_at -> Nullable<Timestamp>,
-    }
-}
-
-diesel::table! {
     use diesel::sql_types::*;
     use super::sql_types::Pf2ArmorType;
 
@@ -334,6 +327,7 @@ diesel::table! {
         dying -> Int4,
         wound -> Int4,
         doom -> Int4,
+        misc_armor_bonus -> Int4,
         fort_prof -> Pf2Proficiency,
         fort_misc_bonus -> Int4,
         refl_prof -> Pf2Proficiency,
@@ -508,7 +502,6 @@ diesel::joinable!(pf2_weapon -> pf2_items (item_id));
 diesel::joinable!(pf2_weapon -> pf2_weapon_group (group_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
-    initialization_log,
     pf2_armor,
     pf2_armor_group,
     pf2_character_ancestry_ability_modifier,

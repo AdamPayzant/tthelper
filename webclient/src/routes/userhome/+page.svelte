@@ -2,8 +2,8 @@
 	import type { ComponentType } from 'svelte';
 	import { writable, type Writable } from 'svelte/store';
 
-	import NewCharacter from '$lib/components/NewCharacter.svelte';
-	import CharacterSheet from '$lib/components/CharacterSheet.svelte';
+	import NewCharacter from '$lib/components/pf2/NewCharacter.svelte';
+	import CharacterSheet from '$lib/components/pf2/CharacterSheet.svelte';
 	import type { FullCharacterData } from '$lib/pf2_services_types';
 
 	export let data;
