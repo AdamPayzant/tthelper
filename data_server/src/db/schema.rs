@@ -107,6 +107,7 @@ diesel::table! {
         character_id -> Int4,
         item_id -> Nullable<Int4>,
         proficiency -> Pf2Proficiency,
+        name -> Text,
         matk -> Int4,
         mdmg -> Int4,
         attack_type -> Pf2AttackType,

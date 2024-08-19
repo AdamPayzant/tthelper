@@ -252,6 +252,7 @@ export interface Attack {
 	id: number;
 	weapon: Weapon | undefined;
 	prof: string;
+	name: string;
 	matk: number;
 	mdmg: number;
 	attack_type: string;

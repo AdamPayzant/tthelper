@@ -1,92 +1,41 @@
 <script lang="ts">
 	import type { Writable } from 'svelte/store';
 	import { type FullCharacterData, type AbilityUpdate } from '$lib/pf2_services_types';
+	import {
+		get_str_score,
+		get_dex_score,
+		get_con_score,
+		get_int_score,
+		get_wis_score,
+		get_cha_score,
+		is_apex_relevant
+	} from '$lib/pf2_utils';
 
 	export let data: Writable<FullCharacterData | undefined>;
 
-	$: is_apex_relevant = (ability: string): boolean => {
-		return $data
-			? $data.active_apex_item_bonus != undefined && $data.active_apex_item_bonus === ability
-			: false;
+	$: apex = (ability: string): boolean => {
+		if (!$data) return false;
+		return is_apex_relevant(ability, $data);
 	};
 
 	// In retrospect, not putting the abilities in an array was a mistake, maybe fix that down the line
-	$: get_str_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.str_base + $data.str_bonus;
-		if (is_apex_relevant('Strength')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
+	$: str_score = (): number => {
+		return get_str_score($data);
 	};
-	$: get_dex_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.dex_base + $data.dex_bonus;
-
-		if (is_apex_relevant('Dexterity')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
+	$: dex_score = (): number => {
+		return get_dex_score($data);
 	};
-	$: get_con_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.con_base + $data.con_bonus;
-
-		if (is_apex_relevant('Constitution')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
+	$: con_score = (): number => {
+		return get_con_score($data);
 	};
-	$: get_int_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.int_base + $data.int_bonus;
-
-		if (is_apex_relevant('Intelligence')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
+	$: int_score = (): number => {
+		return get_int_score($data);
 	};
-	$: get_wis_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.wis_base + $data.wis_bonus;
-
-		if (is_apex_relevant('Wisdom')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
+	$: wis_score = (): number => {
+		return get_wis_score($data);
 	};
-	$: get_cha_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.cha_base + $data.cha_bonus;
-
-		if (is_apex_relevant('Charisma')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
+	$: cha_score = (): number => {
+		return get_cha_score($data);
 	};
 
 	async function ability_change(ability: string) {
@@ -132,7 +81,7 @@
 				return;
 		}
 
-		let res = await fetch(`userhome/character/${cid}/abilities`, {
+		let res = await fetch(`userhome/character/${$data.id}/abilities`, {
 			method: 'PUT',
 			body: JSON.stringify(update)
 		});
@@ -155,9 +104,9 @@
 			<tr>
 				<td> Strength </td>
 				<td>
-					{Math.floor((get_str_score() - 10) / 2)}
+					{Math.floor((str_score() - 10) / 2)}
 				</td>
-				<td> {get_str_score()} </td>
+				<td> {str_score()} </td>
 				<p class="pl-2 pr-2">=</p>
 				<td>
 					<input
@@ -180,7 +129,7 @@
 					/>
 				</td>
 				<td>
-					{#if is_apex_relevant('Strength')}
+					{#if apex('Strength')}
 						2
 					{/if}
 				</td>
@@ -188,9 +137,9 @@
 			<tr>
 				<td> Dexterity </td>
 				<td>
-					{Math.floor((get_dex_score() - 10) / 2)}
+					{Math.floor((dex_score() - 10) / 2)}
 				</td>
-				<td> {get_dex_score()} </td>
+				<td> {dex_score()} </td>
 				<p class="pl-2 pr-2">=</p>
 				<td>
 					<input
@@ -213,7 +162,7 @@
 					/>
 				</td>
 				<td>
-					{#if is_apex_relevant('Dexterity')}
+					{#if apex('Dexterity')}
 						2
 					{/if}
 				</td>
@@ -221,9 +170,9 @@
 			<tr>
 				<td> Constitution </td>
 				<td>
-					{Math.floor((get_con_score() - 10) / 2)}
+					{Math.floor((con_score() - 10) / 2)}
 				</td>
-				<td> {get_con_score()} </td>
+				<td> {con_score()} </td>
 				<p class="pl-2 pr-2">=</p>
 				<td>
 					<input
@@ -246,7 +195,7 @@
 					/>
 				</td>
 				<td>
-					{#if is_apex_relevant('Constitution')}
+					{#if apex('Constitution')}
 						2
 					{/if}
 				</td>
@@ -254,9 +203,9 @@
 			<tr>
 				<td> Intelligence </td>
 				<td>
-					{Math.floor((get_int_score() - 10) / 2)}
+					{Math.floor((int_score() - 10) / 2)}
 				</td>
-				<td> {get_int_score()} </td>
+				<td> {int_score()} </td>
 				<p class="pl-2 pr-2">=</p>
 				<td>
 					<input
@@ -279,7 +228,7 @@
 					/>
 				</td>
 				<td>
-					{#if is_apex_relevant('Intelligence')}
+					{#if apex('Intelligence')}
 						2
 					{/if}
 				</td>
@@ -287,9 +236,9 @@
 			<tr>
 				<td> Wisdom </td>
 				<td>
-					{Math.floor((get_wis_score() - 10) / 2)}
+					{Math.floor((wis_score() - 10) / 2)}
 				</td>
-				<td> {get_wis_score()} </td>
+				<td> {wis_score()} </td>
 				<p class="pl-2 pr-2">=</p>
 				<td>
 					<input
@@ -312,7 +261,7 @@
 					/>
 				</td>
 				<td>
-					{#if is_apex_relevant('Wisdom')}
+					{#if apex('Wisdom')}
 						2
 					{/if}
 				</td>
@@ -320,9 +269,9 @@
 			<tr>
 				<td> Charisma </td>
 				<td>
-					{Math.floor((get_cha_score() - 10) / 2)}
+					{Math.floor((cha_score() - 10) / 2)}
 				</td>
-				<td> {get_cha_score()} </td>
+				<td> {cha_score()} </td>
 				<p class="pl-2 pr-2">=</p>
 				<td>
 					<input
@@ -345,7 +294,7 @@
 					/>
 				</td>
 				<td>
-					{#if is_apex_relevant('Charisma')}
+					{#if apex('Charisma')}
 						2
 					{/if}
 				</td>

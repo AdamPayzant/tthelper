@@ -397,6 +397,7 @@ pub struct CharacterAttack {
     pub character_id: i32,
     pub item_id: Option<i32>,
     pub proficiency: db_enums::Pf2Proficiency,
+    pub name: String,
     pub matk: i32,
     pub mdmg: i32,
     pub attack_type: db_enums::Pf2AttackType,

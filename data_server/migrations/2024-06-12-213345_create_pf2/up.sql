@@ -408,6 +408,7 @@ CREATE TABLE IF NOT EXISTS pf2_character_attacks (
     item_id integer REFERENCES pf2_character_items(id) ON DELETE CASCADE, -- Optional
 
     proficiency pf2_proficiency NOT NULL,
+    name text DEFAULT '' NOT NULL,
     matk integer DEFAULT 0 NOT NULL,
     mdmg integer DEFAULT 0 NOT NULL,
     attack_type pf2_attack_type NOT NULL,
@@ -465,6 +466,8 @@ CREATE OR REPLACE FUNCTION add_new_pf2_character_defaults()
 
         INSERT INTO pf2_character_skills (character_id, skill_id)
             SELECT NEW.id, s.id FROM pf2_skills s;
+        INSERT INTO pf2_character_attacks (character_id, proficiency, name, attack_type, damage_die)
+            VALUES (NEW.id, 'untrained', 'Trip', 'athletics', null), (NEW.id, 'untrained', 'Unarmed', 'str_str', 4);
 
         RETURN NEW;
     END;

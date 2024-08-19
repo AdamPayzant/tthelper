@@ -3,12 +3,14 @@
 	import type { Writable } from 'svelte/store';
 	import {
 		type FullCharacterData,
-		type Skill,
 		type InventoryItem,
 		Pf2ArmorType
 	} from '$lib/pf2_services_types';
+	import { get_str_score, get_dex_score, get_con_score, get_wis_score } from '$lib/pf2_utils';
+
 	import Abilities from '$lib/components/pf2/sheet_subcomponents/Abilities.svelte';
 	import SkillList from '$lib/components/pf2/sheet_subcomponents/SkillList.svelte';
+	import Attacks from '$lib/components/pf2/sheet_subcomponents/Attacks.svelte';
 
 	export let cid: number;
 	export let data: Writable<FullCharacterData | undefined>;
@@ -35,95 +37,10 @@
 	//        Reactive Functions      //
 	// ============================== //
 
-	$: is_apex_relevant = (ability: string): boolean => {
-		return $data
-			? $data.active_apex_item_bonus != undefined && $data.active_apex_item_bonus === ability
-			: false;
-	};
-
-	// In retrospect, not putting the abilities in an array was a mistake, maybe fix that down the line
-	$: get_str_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.str_base + $data.str_bonus;
-		if (is_apex_relevant('Strength')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
-	};
-	$: get_dex_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.dex_base + $data.dex_bonus;
-
-		if (is_apex_relevant('Dexterity')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
-	};
-	$: get_con_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.con_base + $data.con_bonus;
-
-		if (is_apex_relevant('Constitution')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
-	};
-	$: get_int_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.int_base + $data.int_bonus;
-
-		if (is_apex_relevant('Intelligence')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
-	};
-	$: get_wis_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.wis_base + $data.wis_bonus;
-
-		if (is_apex_relevant('Wisdom')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
-	};
-	$: get_cha_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.cha_base + $data.cha_bonus;
-
-		if (is_apex_relevant('Charisma')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
-	};
-
 	$: get_fort_bonus = (): number => {
 		if (!$data) return 0;
 		return (
-			Math.floor((get_con_score() - 10) / 2) +
+			Math.floor((get_con_score($data) - 10) / 2) +
 			(get_proficiency_bonus($data.fort_prof) + $data.lvl) +
 			$data.fort_misc_bonus +
 			get_resilience_bonus()
@@ -134,7 +51,7 @@
 		if (!$data) return 0;
 		// TODO: Check if Mighty Bulwark is taken and relevant
 		return (
-			Math.floor((get_dex_score() - 10) / 2) +
+			Math.floor((get_dex_score($data) - 10) / 2) +
 			(get_proficiency_bonus($data.refl_prof) + $data.lvl) +
 			$data.refl_misc_bonus +
 			get_resilience_bonus()
@@ -144,7 +61,7 @@
 	$: get_will_bonus = (): number => {
 		if (!$data) return 0;
 		return (
-			Math.floor((get_wis_score() - 10) / 2) +
+			Math.floor((get_wis_score($data) - 10) / 2) +
 			(get_proficiency_bonus($data.will_prof) + $data.lvl) +
 			$data.will_misc_bonus +
 			get_resilience_bonus()
@@ -277,7 +194,7 @@
 								<tr>
 									<td>{0}</td>
 									=
-									<td>{Math.floor((get_str_score() - 10) / 2)}</td>
+									<td>{Math.floor((get_str_score($data) - 10) / 2)}</td>
 									<td>{get_armor_proficiency_bonus()}</td>
 									<td>
 										{#if $data.armor}
@@ -306,7 +223,7 @@
 								<div class="pl-2 pr-2">Fort</div>
 								<td>{get_fort_bonus()}</td>
 								{get_fort_bonus() + 10}
-								<td>{Math.floor((get_con_score() - 10) / 2)}</td>
+								<td>{Math.floor((get_con_score($data) - 10) / 2)}</td>
 								<td>{get_proficiency_bonus($data.fort_prof) + $data.lvl}</td>
 								<td>{get_resilience_bonus()}</td>
 								<td>{$data.fort_misc_bonus}</td>
@@ -315,7 +232,7 @@
 								<div class="pl-2 pr-2">Refl</div>
 								<td>{get_refl_bonus()}</td>
 								{get_refl_bonus() + 10}
-								<td>{Math.floor((get_dex_score() - 10) / 2)}</td>
+								<td>{Math.floor((get_dex_score($data) - 10) / 2)}</td>
 								<td>{get_proficiency_bonus($data.refl_prof) + $data.lvl}</td>
 								<td>{get_resilience_bonus()}</td>
 								<td>{$data.refl_misc_bonus}</td>
@@ -324,13 +241,14 @@
 								<div class="pl-2 pr-2">Will</div>
 								<td>{get_will_bonus()}</td>
 								{get_will_bonus() + 10}
-								<td>{Math.floor((get_wis_score() - 10) / 2)}</td>
+								<td>{Math.floor((get_wis_score($data) - 10) / 2)}</td>
 								<td>{get_proficiency_bonus($data.will_prof) + $data.lvl}</td>
 								<td>{get_resilience_bonus()}</td>
 								<td>{$data.will_misc_bonus}</td>
 							</tr>
 						</table>
 					</div>
+					<Attacks {data} />
 				</div>
 			</div>
 			<div id="CoreDetails" class="flex max-h-48">

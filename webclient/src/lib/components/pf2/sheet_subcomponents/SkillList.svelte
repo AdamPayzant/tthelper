@@ -1,6 +1,14 @@
 <script lang="ts">
 	import type { Writable } from 'svelte/store';
 	import { type FullCharacterData, type Skill } from '$lib/pf2_services_types';
+	import {
+		get_str_score,
+		get_dex_score,
+		get_con_score,
+		get_int_score,
+		get_wis_score,
+		get_cha_score
+	} from '$lib/pf2_utils';
 
 	export let data: Writable<FullCharacterData | undefined>;
 
@@ -15,105 +23,20 @@
 		);
 	};
 
-	$: is_apex_relevant = (ability: string): boolean => {
-		return $data
-			? $data.active_apex_item_bonus != undefined && $data.active_apex_item_bonus === ability
-			: false;
-	};
-
-	// In retrospect, not putting the abilities in an array was a mistake, maybe fix that down the line
-	$: get_str_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.str_base + $data.str_bonus;
-		if (is_apex_relevant('Strength')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
-	};
-	$: get_dex_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.dex_base + $data.dex_bonus;
-
-		if (is_apex_relevant('Dexterity')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
-	};
-	$: get_con_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.con_base + $data.con_bonus;
-
-		if (is_apex_relevant('Constitution')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
-	};
-	$: get_int_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.int_base + $data.int_bonus;
-
-		if (is_apex_relevant('Intelligence')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
-	};
-	$: get_wis_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.wis_base + $data.wis_bonus;
-
-		if (is_apex_relevant('Wisdom')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
-	};
-	$: get_cha_score = (): number => {
-		if (!$data) throw Error;
-		let base_bonus = $data.cha_base + $data.cha_bonus;
-
-		if (is_apex_relevant('Charisma')) {
-			if (base_bonus < 18) {
-				return 18;
-			} else {
-				return base_bonus + 2;
-			}
-		}
-		return base_bonus;
-	};
-
 	function ability_to_modifier(ability: string): number {
 		switch (ability.substring(0, 2)) {
 			case 'St':
-				return Math.floor((get_str_score() - 10) / 2);
+				return Math.floor((get_str_score($data) - 10) / 2);
 			case 'De':
-				return Math.floor((get_dex_score() - 10) / 2);
+				return Math.floor((get_dex_score($data) - 10) / 2);
 			case 'Co':
-				return Math.floor((get_con_score() - 10) / 2);
+				return Math.floor((get_con_score($data) - 10) / 2);
 			case 'In':
-				return Math.floor((get_int_score() - 10) / 2);
+				return Math.floor((get_int_score($data) - 10) / 2);
 			case 'Wi':
-				return Math.floor((get_wis_score() - 10) / 2);
+				return Math.floor((get_wis_score($data) - 10) / 2);
 			case 'Ch':
-				return Math.floor((get_cha_score() - 10) / 2);
+				return Math.floor((get_cha_score($data) - 10) / 2);
 			default:
 				console.error('Invalid ability modifier lookup');
 				return 0;
